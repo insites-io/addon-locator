@@ -1,0 +1,71 @@
+---
+metadata: {
+    partial_name: 'Locator | Find a Partner | Card'
+}
+---
+
+{% assign desc = location.short_description | strip_html | strip %}
+
+{% assign address = '' %}
+{% if location.address_1 %}
+  {% assign address = address | append: location.address_1 %}
+{% endif %}
+{% if location.address_2 %}
+  {% assign address = address | append: ', ' | append: location.address_2 %}
+{% endif %}
+{% if location.city %}
+  {% assign address = address | append: ' ' | append: location.city %}
+{% endif %}
+{% if location.postcode %}
+  {% assign address = address | append: ' ' | append: location.postcode %}
+{% endif %}
+
+{% assign phone = '' %}
+{% if location.phone_number %}
+  {% if location.phone_country_code %}
+    {% assign phone = '+' | append: location.phone_country_code | append: ' ' %}
+  {% endif %}
+  {% assign phone = phone | append: location.phone_number %}
+{% endif %}
+
+{% assign category_name = '' %}
+{% if location.category %}
+  {% assign category_name = location.category.name %}
+{% endif %}
+
+<a href="/partner/{{ location.slug }}" class="locator-card"
+   data-lat="{{ location.latitude }}" data-lng="{{ location.longitude }}"
+   data-name="{{ location.location_name | escape }}"
+   data-type="{{ category_name | escape }}"
+   data-desc="{{ desc | escape }}"
+   data-address="{{ address | escape }}"
+   data-phone="{{ phone | escape }}"
+   data-logo="{{ location.location_image.url | escape }}"
+   {% if location.category %}data-tag="{{ location.category.slug }}" data-tag-label="{{ location.category.name | escape }}"{% endif %}>
+  <div class="locator-card__logo">
+    {% if location.location_image.url %}
+      <img src="{{ location.location_image.url }}" alt="{{ location.location_name | escape }}">
+    {% else %}
+      {%- include 'modules/website/layout/placeholder_image' -%}
+    {% endif %}
+  </div>
+  <div class="locator-card__body">
+    <div class="locator-card__header">
+      <div class="locator-card__identity">
+        <p class="locator-card__name">{{ location.location_name }}</p>
+      </div>
+      {% if location.category %}
+        <span class="locator-tag locator-tag--{{ location.category.slug }}"><i class="icon-check"></i> {{ location.category.name }}</span>
+      {% endif %}
+    </div>
+    {% if desc != '' %}
+      <p class="locator-card__desc">{{ desc }}</p>
+    {% endif %}
+    {% if address != '' %}
+      <p class="locator-card__meta"><i class="icon-map-pin"></i> {{ address }}</p>
+    {% endif %}
+    {% if phone != '' %}
+      <p class="locator-card__meta"><i class="icon-phone-1"></i> {{ phone }}</p>
+    {% endif %}
+  </div>
+</a>

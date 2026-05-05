@@ -1,0 +1,54 @@
+---
+metadata: {
+    partial_name: 'Locator | Find a Partner | Results'
+}
+---
+
+{%- assign search_q = context.params.search | strip -%}
+{%- if search_q != blank -%}
+  {%- graphql data = "modules/locator/locations/get_locations", location: search_q -%}
+{%- else -%}
+  {%- graphql data = "modules/locator/locations/get_locations" -%}
+{%- endif -%}
+
+<section class="locator-results-section">
+  <div class="wrapper">
+    <div class="grid-container">
+
+      <div class="locator-main">
+
+        {% comment %} Partner list {% endcomment %}
+        <div class="locator-list-panel" id="locator-list-panel">
+          <div class="locator-list" id="locator-list">
+
+            {% for location in data.items.results %}
+              {% include 'modules/locator/website/find_a_partner/card' %}
+            {% endfor %}
+
+          </div>
+          <div class="locator-pagination" id="locator-pagination"></div>
+        </div>
+
+        {% comment %} Map {% endcomment %}
+        <div class="locator-map-panel hide-for-small-only">
+          <div class="locator-map" id="locator-map"></div>
+        </div>
+
+      </div>
+
+    </div>
+    <div class="spacer xxx-large"></div>
+  </div>
+</section>
+
+{% comment %} Locator Country {% endcomment %}
+{%- include "modules/insites_cms/globals" -%}
+{%- assign loc_country = context.exports.global.loc_1_country | default: 'Australia' -%}
+{%- if loc_country == blank -%}{%- assign loc_country = 'Australia' -%}{%- endif -%}
+<script>window.locatorCountry = {{ loc_country | json }};</script>
+
+{% comment %} Google Maps Key {% endcomment %}
+{% function google_maps_key = "crm/controller/google_maps/get" %}
+{% assign google_maps_key = google_maps_key.key %}
+<script src="https://unpkg.com/@googlemaps/markerclusterer/dist/index.umd.js"></script>
+<script async src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_key }}&callback=initLocatorMap&loading=async"></script>

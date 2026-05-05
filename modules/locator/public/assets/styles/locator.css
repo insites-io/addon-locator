@@ -1,0 +1,601 @@
+/* ─── Distance hover message ─────────────────────────────────────────────── */
+
+.locator-distance-tip {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  padding: 4px 10px;
+  border-radius: 4px;
+  background: var(--color-sub1);
+  color: #fff;
+  font-family: var(--font-family-02);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 150%;
+  pointer-events: none;
+  z-index: 100;
+}
+
+.locator-distance-tip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: var(--color-sub1);
+}
+
+/* ─── Search bar ─────────────────────────────────────────────────────────── */
+
+.locator-search-bar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.locator-search-bar__left {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+ins-input input,
+ins-input-select input {
+  height: 40px !important;
+}
+
+#locator-location {
+  width: 398px;
+}
+
+.locator-search-bar ins-input-select label{
+  display: none !important;
+}
+
+.locator-search-bar ins-input .ins-input-wrap,
+.locator-search-bar ins-input-select .ins-input-select-wrap {
+  height: 40px;
+}
+
+.locator-search-bar ins-input-select .ins-input-select-wrap {
+  min-width: 181px;
+}  
+
+/* ─── Controls bar ───────────────────────────────────────────────────────── */
+
+.locator-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 40px;
+}
+
+.locator-controls__status {
+  font-family: var(--font-family-02);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 150%;
+  color: var(--font-color-body);
+}
+
+#locator-clear-filters {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: var(--font-family-02);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 150%;
+  color: var(--color-main);
+  text-decoration: underline;
+}
+
+.locator-controls__view {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.locator-controls__view-label {
+  font-family: var(--font-family-02);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 16px;
+  color: var(--font-color-head);
+}
+
+.locator-view-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--font-color-body);
+  font-size: 18px;
+  line-height: 18px;
+}
+
+.locator-view-btn.is-active {
+  color: var(--color-main);
+}
+
+/* ─── Main layout ────────────────────────────────────────────────────────── */
+
+.locator-main {
+  display: flex;
+  gap: 24px;
+}
+
+.locator-list-panel {
+  width: 520px;
+  flex-shrink: 0;
+  height: 960px;
+  overflow-y: auto;
+  border: 1px solid var(--color-ui-04);
+  background: var(--color-ui-01);
+}
+
+.locator-map-panel {
+  flex: 1;
+  height: 960px;
+}
+
+.locator-map {
+  width: 100%;
+  height: 100%;
+  background-color: var(--color-ui-03);
+  border-radius: 4px;
+}
+
+/* ─── Partner list ───────────────────────────────────────────────────────── */
+
+.locator-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+}
+
+/* ─── Grid view ──────────────────────────────────────────────────────────── */
+
+.locator-list.is-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.locator-list.is-grid .locator-card {
+  flex-direction: column;
+  gap: 0;
+  padding: 0;
+}
+
+.locator-list.is-grid .locator-card .locator-tag {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+}
+
+.locator-list.is-grid .locator-card__logo {
+  margin-top: 16px;
+  margin-left: 16px;
+}
+
+.locator-list.is-grid .locator-card__body {
+  padding: 12px;
+}
+
+.locator-list.is-grid .locator-card__desc {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ─── Card ───────────────────────────────────────────────────────────────── */
+
+.locator-card {
+  position: relative;
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--color-ui-04);
+  border-radius: 8px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.locator-card:hover {
+  box-shadow: var(--shadow-level-2);
+}
+
+.locator-card__logo {
+  flex-shrink: 0;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  border: 1px solid var(--color-ui-03);
+  background-color: var(--color-ui-01);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.locator-card__logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.locator-card__logo .placeholder-img {
+  width: 100%;
+}
+
+.locator-card__body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.locator-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.locator-card__name {
+  font-family: var(--font-family-01);
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 130%;
+  letter-spacing: 0.18px;
+  color: var(--font-color-head);
+}
+
+.locator-card__type {
+  font-family: var(--font-family-02);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 150%;
+  color: var(--font-color-body);
+}
+
+.locator-card__desc {
+  font-family: var(--font-family-02);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 150%;
+  color: var(--font-color-body);
+}
+
+.locator-card__meta {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  font-family: var(--font-family-02);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 150%;
+  color: var(--font-color-body);
+}
+
+.locator-card__meta i {
+  flex-shrink: 0;
+  margin-top: 3px;
+  font-size: 12px;
+  color: var(--color-main);
+}
+
+/* ─── Tags ───────────────────────────────────────────────────────────────── */
+
+.locator-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-family: var(--font-family-02);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 150%;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.locator-tag i {
+  font-size: 11px;
+}
+
+.locator-tag {
+  background-color: rgba(94, 95, 96, 0.1);
+  color: var(--font-color-body);
+}
+
+.locator-tag--referral {
+  background-color: rgba(67, 108, 242, 0.1);
+  color: var(--info);
+}
+
+.locator-tag--implementation {
+  background-color: rgba(12, 172, 82, 0.1);
+  color: var(--success);
+}
+
+/* ─── Map InfoWindow overrides ───────────────────────────────────────────── */
+
+.gm-style .gm-style-iw-c {
+  padding: 0 !important;
+  border-radius: 8px !important;
+  border: 1px solid var(--color-ui-04) !important;
+  box-shadow: 0 11px 15px rgba(0, 0, 0, 0.1), 0 24px 38px rgba(0, 0, 0, 0.05) !important;
+}
+
+.gm-style .gm-style-iw-d {
+  overflow: hidden !important;
+}
+
+.gm-style button.gm-ui-hover-effect {
+  top: 6px !important;
+  right: 6px !important;
+  width: 28px !important;
+  height: 28px !important;
+}
+
+/* ─── Map card ───────────────────────────────────────────────────────────── */
+
+.locator-map-card {
+  position: relative;
+  display: flex;
+  gap: 12px;
+  padding: 24px 16px;
+  width: 422px;
+}
+
+.gm-style-iw-ch {
+  display: none;
+}
+.gm-ui-hover-effect {
+  position: absolute !important;
+  top: 0px !important;
+  right: 0px !important;
+  z-index: 100;
+}
+.gm-ui-hover-effect span {
+  margin: 0px !important;
+  mask-image: none !important;
+  background-color: transparent !important;
+}
+.gm-ui-hover-effect span::after {
+  content: 'x';
+  color: var(--font-color-body);
+  font-family: Insites-Font-Icons;
+  font-size: 12px;
+}
+
+.locator-map-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  padding-right: 20px;
+}
+
+.locator-map-card__identity {
+  flex: 1;
+  min-width: 0;
+}
+
+.locator-map-card__logo {
+  flex-shrink: 0;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  border: 1px solid var(--color-ui-03);
+  background-color: var(--color-ui-01);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.locator-map-card__logo img {
+  width: 53px;
+  height: 53px;
+  object-fit: cover;
+}
+
+.locator-map-card__body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 2px;
+}
+
+.locator-map-card__name {
+  font-family: var(--font-family-01);
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 130%;
+  letter-spacing: 0.18px;
+  color: var(--font-color-head);
+}
+
+.locator-map-card__type {
+  font-family: var(--font-family-02);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 150%;
+  color: var(--font-color-body);
+}
+
+.locator-map-card__desc {
+  font-family: var(--font-family-02);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 150%;
+  color: var(--font-color-body);
+}
+
+.locator-map-card__meta {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  font-family: var(--font-family-02);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 150%;
+  color: var(--font-color-body);
+}
+
+.locator-map-card__meta i {
+  flex-shrink: 0;
+  margin-top: 3px;
+  font-size: 12px;
+  color: var(--color-main);
+}
+
+.locator-map-card__actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.locator-map-card__actions a:is(:focus, :hover) {
+  color: var(--font-color-link);
+}
+
+.locator-map-card__view-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 16px;
+  min-height: 24px;
+  border-radius: 8px;
+  background: linear-gradient(105deg, #0095ff 6.5%, #3044ff 94.4%);
+  color: #fff;
+  font-family: var(--font-family-01);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 120%;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+/* ─── Search states ──────────────────────────────────────────────────────── */
+
+.locator-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  font-size: 24px;
+  color: var(--font-color-body);
+  opacity: 0.4;
+}
+
+.locator-empty {
+  padding: 40px 24px;
+  font-family: var(--font-family-02);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 150%;
+  color: var(--font-color-body);
+  text-align: center;
+}
+
+/* ─── Filters drawer ─────────────────────────────────────────────────────── */
+
+.locator-filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 0;
+}
+
+.locator-filter-group__label {
+  font-family: var(--font-family-02);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 150%;
+  color: var(--font-color-head);
+}
+
+.locator-filter-divider {
+  border: none;
+  border-top: 1px solid var(--color-ui-04);
+  margin: 0;
+}
+
+#locator-filters-drawer .ins-drawer-header h4 {
+  font-weight: 700;
+  font-family: var(--font-family-01);
+  line-height: 130%;
+  letter-spacing: 0.24px;
+}
+
+#locator-filters-drawer .ins-checkbox-radio-label {
+  font-weight: 400;
+}
+
+/* ─── Page-hidden cards (pagination, still visible as map pins) ──────────── */
+
+.is-page-hidden {
+  display: none;
+}
+
+/* ─── Pagination ─────────────────────────────────────────────────────────── */
+
+.locator-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 16px;
+  border-top: 1px solid var(--color-ui-04);
+}
+
+.locator-pagination:empty {
+  display: none;
+}
+
+.locator-page-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
+  padding: 0 8px;
+  border: 1px solid var(--color-ui-04);
+  border-radius: 4px;
+  background: var(--color-ui-01);
+  cursor: pointer;
+  font-family: var(--font-family-02);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1;
+  color: var(--font-color-body);
+}
+
+.locator-page-btn.is-active {
+  background: var(--color-main);
+  border-color: var(--color-main);
+  color: #fff;
+  font-weight: 700;
+}
+
+.locator-page-btn:hover:not(.is-active) {
+  background: var(--color-ui-02);
+}

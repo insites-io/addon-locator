@@ -1,0 +1,52 @@
+query get_locations(
+  $page: Int = 1,
+  $size: Int = 100,
+  $location: String = ""
+) {
+  items: records(
+    page: $page
+    per_page: $size
+    filter: {
+      table: { value: "modules/insites_locator/location" }
+      deleted_at: { exists: false }
+      properties: { name: "status", value: "enabled" }
+      or: [
+        { properties: [{ name: "city", contains: $location }] }
+        { properties: [{ name: "postcode", contains: $location }] }
+        { properties: [{ name: "address_1", contains: $location }] }
+      ]
+    }
+    sort: {
+      updated_at: { order: DESC }
+    }
+  ) {
+    total_entries
+    results {
+      id
+      location_name: property(name: "location_name")
+      slug: property(name: "slug")
+      short_description: property(name: "short_description")
+      address_1: property(name: "address_1")
+      address_2: property(name: "address_2")
+      city: property(name: "city")
+      postcode: property(name: "postcode")
+      latitude: property(name: "latitude")
+      longitude: property(name: "longitude")
+      phone_number: property(name: "phone_number")
+      phone_country_code: property(name: "phone_country_code")
+      location_image: property_upload(name: "location_image") {
+        url
+        file_name
+        extension
+      }
+      category: related_record(
+        table: "modules/insites_locator/category"
+        join_on_property: "category_uuid"
+        foreign_property: "uuid"
+      ) {
+        name: property(name: "category_name")
+        slug: property(name: "slug")
+      }
+    }
+  }
+}
