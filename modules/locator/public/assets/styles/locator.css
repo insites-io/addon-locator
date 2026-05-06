@@ -62,7 +62,75 @@ ins-input-select input {
 
 .locator-search-bar ins-input-select .ins-input-select-wrap {
   min-width: 181px;
-}  
+}
+
+@media screen and (max-width: 550px) {
+  .locator-search-bar ins-input-select .ins-input-select-wrap {
+    min-width: 100%;
+    width: 100px;
+  }
+}
+
+/* ─── Search bar — medium (≤ 990px) ─────────────────────────────────────── */
+
+@media screen and (max-width: 990px) {
+  .locator-search-bar {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    column-gap: 16px;
+    align-items: start;
+    padding-bottom: 24px;
+  }
+
+  .locator-search-bar__left,
+  .locator-search-bar__right {
+    display: contents;
+  }
+  .locator-search-bar__right {
+    text-align: end;
+  }
+
+  #locator-location {
+    grid-column: 1;
+    grid-row: 1;
+    width: auto;
+  }
+
+  #locator-distance {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  #locator-search-btn {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  #locator-filters-btn {
+    grid-column: 2;
+    grid-row: 2;
+  }
+}
+
+/* ─── Search bar — small (≤ 639px) ──────────────────────────────────────── */
+
+@media screen and (max-width: 639px) {
+  #locator-search-btn {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    padding-bottom: 8px;
+  }
+
+  #locator-filters-btn {
+    grid-column: 1 / -1;
+    grid-row: 3;
+  }
+
+  #locator-search-btn button,
+  #locator-filters-btn button {
+    width: 100%;
+  }
+}
 
 /* ─── Controls bar ───────────────────────────────────────────────────────── */
 
@@ -135,7 +203,8 @@ ins-input-select input {
 
 .locator-list-panel {
   width: 520px;
-  flex-shrink: 0;
+  flex-shrink: 1;
+  min-width: 0;
   height: 960px;
   overflow-y: auto;
   border: 1px solid var(--color-ui-04);
@@ -143,7 +212,7 @@ ins-input-select input {
 }
 
 .locator-map-panel {
-  flex: 1;
+  flex: 1 0 60%;
   height: 960px;
 }
 
@@ -168,6 +237,18 @@ ins-input-select input {
 .locator-list.is-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
+}
+
+@media screen and (max-width: 1200px) {
+  .locator-controls__view {
+    display: none;
+  }
+  .locator-list.is-grid {
+    grid-template-columns: 1fr;
+  }
+  .locator-map-panel {
+    flex: 1 0 55%;
+  }
 }
 
 .locator-list.is-grid .locator-card {
@@ -999,5 +1080,87 @@ ins-input-select input {
 @media screen and (max-width: 639px) {
   ins-button.full-width button {
     width: 100%;
+  }
+}
+
+/* ─── Mobile map toggle bars ─────────────────────────────────────────────── */
+
+.locator-mobile-map-bar {
+  display: none;
+}
+
+@media screen and (max-width: 639px) {
+
+  .locator-main {
+    gap: 0;
+  }
+
+  .locator-list-panel {
+    width: 100%;
+    height: auto;
+    overflow-y: visible;
+    border: none;
+  }
+
+  .locator-list {
+    padding: 0 0 16px 0;
+  }
+
+  .locator-map-panel {
+    display: none;
+  }
+
+  /* Both bars: fixed white strip at the bottom, visible on mobile */
+  .locator-mobile-map-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background: var(--color-ui-01);
+    border-top: 1px solid var(--color-ui-04);
+    padding: 16px;
+    display: flex;
+    justify-content: center;
+  }
+
+  .locator-mobile-map-bar ins-button {
+    display: block;
+    width: 100%;
+  }
+
+  /* "Close map" bar is hidden until map is open */
+  .locator-mobile-map-bar--close {
+    display: none;
+  }
+
+  /* ── Map-open state ── */
+
+  body.locator-mobile-map-open {
+    overflow: hidden;
+  }
+
+  body.locator-mobile-map-open .locator-map-panel {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 72px;
+    z-index: 999;
+    height: auto;
+  }
+
+  body.locator-mobile-map-open .locator-map {
+    height: 100%;
+    border-radius: 0;
+  }
+
+  body.locator-mobile-map-open .locator-mobile-map-bar--see {
+    display: none;
+  }
+
+  body.locator-mobile-map-open .locator-mobile-map-bar--close {
+    display: flex;
   }
 }

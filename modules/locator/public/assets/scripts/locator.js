@@ -27,6 +27,15 @@
     setView('grid');
   });
 
+  var mqGrid = window.matchMedia('(max-width: 1200px)');
+
+  function applyGridBreakpoint(e) {
+    setView(e.matches ? 'grid' : 'list');
+  }
+
+  mqGrid.addEventListener('change', applyGridBreakpoint);
+  applyGridBreakpoint(mqGrid);
+
 }());
 
 (function () {
@@ -230,6 +239,7 @@
       fullscreenControl: false,
       styles: MAP_STYLES
     });
+    window.locatorMapInstance = map;
 
     infoWindow = new google.maps.InfoWindow({ maxWidth: 424 });
 
@@ -589,6 +599,31 @@
         delete selectedCategories[slug];
       }
       filterByCategories();
+    });
+  }
+
+  if (window.matchMedia('(max-width: 639px)').matches) {
+    document.body.classList.add('locator-mobile-map-open');
+  }
+
+  var seeMapBtn   = document.getElementById('locator-see-map-btn');
+  var closeMapBtn = document.getElementById('locator-close-map-btn');
+
+  if (seeMapBtn) {
+    seeMapBtn.addEventListener('insClick', function () {
+      document.body.classList.add('locator-mobile-map-open');
+      setTimeout(function () {
+        if (window.google && window.google.maps && window.locatorMapInstance) {
+          google.maps.event.trigger(window.locatorMapInstance, 'resize');
+          if (window.updateLocatorMap) { window.updateLocatorMap(null); }
+        }
+      }, 50);
+    });
+  }
+
+  if (closeMapBtn) {
+    closeMapBtn.addEventListener('insClick', function () {
+      document.body.classList.remove('locator-mobile-map-open');
     });
   }
 

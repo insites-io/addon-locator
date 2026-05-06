@@ -30,16 +30,40 @@ metadata: {
         </div>
 
         {% comment %} Map {% endcomment %}
-        <div class="locator-map-panel hide-for-small-only">
+        <div class="locator-map-panel" id="locator-map-panel">
           <div class="locator-map" id="locator-map"></div>
         </div>
 
       </div>
 
     </div>
-    <div class="spacer xxx-large"></div>
+    <div class="spacer xxxx-large show-for-medium"></div>
+    <div class="spacer xxx-large show-for-small-only"></div>
   </div>
 </section>
+
+{% comment %} Mobile map toggle bars {% endcomment %}
+<div class="locator-mobile-map-bar locator-mobile-map-bar--see" id="locator-see-map-bar">
+  <ins-button
+    id="locator-see-map-btn"
+    label="See on map"
+    icon="icon-map-pin"
+    solid
+    color="primary"
+    class="full-width"
+  ></ins-button>
+</div>
+
+<div class="locator-mobile-map-bar locator-mobile-map-bar--close" id="locator-close-map-bar">
+  <ins-button
+    id="locator-close-map-btn"
+    label="Close map"
+    icon="icon-close-1"
+    solid
+    color="primary"
+    class="full-width"
+  ></ins-button>
+</div>
 
 {% comment %} Locator Country {% endcomment %}
 {%- include "modules/insites_cms/globals" -%}
