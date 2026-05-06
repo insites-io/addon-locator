@@ -33,7 +33,7 @@ metadata: {
   {% assign category_name = location.category.name %}
 {% endif %}
 
-<a href="/partner/{{ location.slug }}" class="locator-card"
+<a href="/find-a-partner/{{ location.slug }}" class="locator-card"
    data-lat="{{ location.latitude }}" data-lng="{{ location.longitude }}"
    data-name="{{ location.location_name | escape }}"
    data-type="{{ category_name | escape }}"

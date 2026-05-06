@@ -2,7 +2,7 @@
 slug: find-a-partner
 layout: modules/website/website_default
 searchable: true
-max_deep_level: 1
+max_deep_level: 2
 metadata: {
     "status": "published",
     "page_name": "Find a Partner | Insites",
@@ -24,6 +24,12 @@ metadata: {
 }
 ---
 
-{% include 'modules/locator/layout/hero_title', header: 'Find an Insites partner', description: 'Hire partners who fit your needs and budget, freeing you to focus on running your business.' %}
-{% include 'modules/locator/website/find_a_partner/filters' %}
-{% include 'modules/locator/website/find_a_partner/results' %}
+{% if context.params.slug2 %}
+
+  {% include 'modules/locator/website/find_a_partner/details' %}
+
+{% else %}
+
+  {% include 'modules/locator/website/find_a_partner/list' %}
+
+{% endif %}

@@ -1,0 +1,202 @@
+---
+metadata: {
+    partial_name: 'Locator | Find a Partner | Details'
+}
+---
+
+{%- assign partner_slug = context.params.slug2 | strip -%}
+{%- graphql data = "modules/locator/locations/get_location_detail", slug: partner_slug -%}
+{%- assign partner = data.items.results[0] -%}
+
+{% if partner %}
+
+  {%- comment -%} Build address {%- endcomment -%}
+  {%- assign address_parts = '' -%}
+  {%- if partner.address_1 and partner.address_1 != '' -%}
+    {%- assign address_parts = partner.address_1 -%}
+  {%- endif -%}
+  {%- if partner.address_2 and partner.address_2 != '' -%}
+    {%- assign address_parts = address_parts | append: ', ' | append: partner.address_2 -%}
+  {%- endif -%}
+  {%- if partner.city and partner.city != '' -%}
+    {%- assign address_parts = address_parts | append: ' ' | append: partner.city -%}
+  {%- endif -%}
+  {%- if partner.postcode and partner.postcode != '' -%}
+    {%- assign address_parts = address_parts | append: ' ' | append: partner.postcode -%}
+  {%- endif -%}
+
+  {%- comment -%} Build phone {%- endcomment -%}
+  {%- assign phone_full = '' -%}
+  {%- if partner.phone_number and partner.phone_number != '' -%}
+    {%- if partner.phone_country_code and partner.phone_country_code != '' -%}
+      {%- assign phone_full = '+' | append: partner.phone_country_code | append: ' ' | append: partner.phone_number -%}
+    {%- else -%}
+      {%- assign phone_full = partner.phone_number -%}
+    {%- endif -%}
+  {%- endif -%}
+
+  {%- comment -%} Strip HTML from short description for inline use {%- endcomment -%}
+  {%- assign tagline = partner.short_description | strip_html | strip -%}
+
+  {%- comment -%} Banner {%- endcomment -%}
+  <div class="locator-profile-banner">
+    {%- if partner.image_1.url -%}
+      <img src="{{ partner.image_1.url }}" alt="" class="locator-profile-banner__img" aria-hidden="true">
+    {%- endif -%}
+    <div class="locator-profile-banner__overlay" aria-hidden="true"></div>
+  </div>
+
+  {%- comment -%} Profile heading: logo + identity + actions {%- endcomment -%}
+  <div class="locator-profile-heading-wrap">
+    <div class="locator-profile-heading">
+      <div class="locator-profile-heading__row">
+
+        <div class="locator-profile-logo-col">
+          <div class="locator-profile-logo">
+            {%- if partner.location_image.url -%}
+              <img src="{{ partner.location_image.url }}" alt="{{ partner.location_name | escape }}">
+            {%- else -%}
+              {%- include 'modules/website/layout/placeholder_image' -%}
+            {%- endif -%}
+          </div>
+        </div>
+
+        <div class="locator-profile-identity-col">
+          <div class="locator-profile-identity">
+            <div class="locator-profile-identity__name-row">
+              <h1 class="heading-1-xsmall">{{ partner.location_name }}</h1>
+              {%- if partner.category.slug -%}
+                <span class="locator-tag locator-tag--{{ partner.category.slug }}"><i class="icon-check" aria-hidden="true"></i> {{ partner.category.name }}</span>
+              {%- endif -%}
+            </div>
+            {%- if tagline != '' -%}
+              <p class="locator-profile-identity__tagline">{{ tagline }}</p>
+            {%- endif -%}
+            <div class="locator-profile-identity__spacer"></div>
+          </div>
+        </div>
+
+        {%- if partner.website and partner.website != '' -%}
+          <div class="locator-profile-actions-col">
+            <div class="locator-profile-actions">
+              <a href="{{ partner.website | escape }}" target="_blank" rel="noopener noreferrer">
+                <ins-button
+                  label="Open website"
+                  icon-right="icon-arrow-up-right"
+                  solid
+                  color="primary"
+                  class="full-width"
+                ></ins-button>
+              </a>
+            </div>
+          </div>
+        {%- endif -%}
+
+      </div>
+    </div>
+  </div>
+
+  {%- comment -%} Main content {%- endcomment -%}
+  <div class="locator-profile-page-content">
+    <div class="locator-profile-content">
+      <div class="locator-profile-body">
+
+        <div class="locator-profile-main">
+          {%- if partner.long_description and partner.long_description != '' -%}
+            <div class="locator-profile-section__body">{{ partner.long_description }}</div>
+          {%- endif -%}
+        </div>
+
+        <aside class="locator-profile-sidebar">
+          <div class="locator-profile-contact-card">
+
+            <p class="locator-profile-contact-card__title">Contact us</p>
+            <div class="spacer small"></div>
+
+            <div class="locator-profile-contact-list">
+              {%- if address_parts != '' -%}
+                <div class="locator-profile-contact-row">
+                  <i class="icon-map-pin" aria-hidden="true"></i>
+                  <span>{{ address_parts }}</span>
+                </div>
+              {%- endif -%}
+              {%- if phone_full != '' -%}
+                <div class="locator-profile-contact-row">
+                  <i class="icon-phone1" aria-hidden="true"></i>
+                  <span>{{ phone_full }}</span>
+                </div>
+              {%- endif -%}
+              {%- if partner.email and partner.email != '' -%}
+                <div class="locator-profile-contact-row">
+                  <i class="icon-email-1" aria-hidden="true"></i>
+                  <a href="mailto:{{ partner.email | escape }}">{{ partner.email }}</a>
+                </div>
+              {%- endif -%}
+              {%- if partner.website and partner.website != '' -%}
+                <div class="locator-profile-contact-row">
+                  <i class="icon-globals" aria-hidden="true"></i>
+                  <a href="{{ partner.website | escape }}" target="_blank" rel="noopener noreferrer">
+                    {{- partner.website | remove: 'https://' | remove: 'http://' | remove: 'www.' -}}
+                  </a>
+                </div>
+              {%- endif -%}
+            </div>
+
+            {%- assign has_social = false -%}
+            {%- if partner.facebook_link and partner.facebook_link != '' -%}{%- assign has_social = true -%}{%- endif -%}
+            {%- if partner.twitter_link and partner.twitter_link != '' -%}{%- assign has_social = true -%}{%- endif -%}
+            {%- if partner.instagram_link and partner.instagram_link != '' -%}{%- assign has_social = true -%}{%- endif -%}
+            {%- if partner.linkedin_link and partner.linkedin_link != '' -%}{%- assign has_social = true -%}{%- endif -%}
+            {%- if partner.youtube_link and partner.youtube_link != '' -%}{%- assign has_social = true -%}{%- endif -%}
+
+            {%- if has_social -%}
+              <div class="spacer large"></div>
+              <p class="locator-profile-contact-card__title">Follow us</p>
+              <div class="spacer small"></div>
+              <div class="locator-profile-social">
+                {%- if partner.facebook_link and partner.facebook_link != '' -%}
+                  <a href="{{ partner.facebook_link | escape }}" target="_blank" rel="noopener noreferrer" class="locator-profile-social__link" aria-label="{{ partner.location_name | escape }} on Facebook">
+                    <i class="icon-facebook-square" aria-hidden="true"></i>
+                  </a>
+                {%- endif -%}
+                {%- if partner.twitter_link and partner.twitter_link != '' -%}
+                  <a href="{{ partner.twitter_link | escape }}" target="_blank" rel="noopener noreferrer" class="locator-profile-social__link" aria-label="{{ partner.location_name | escape }} on X / Twitter">
+                    <i class="icon-social-x-square" aria-hidden="true"></i>
+                  </a>
+                {%- endif -%}
+                {%- if partner.instagram_link and partner.instagram_link != '' -%}
+                  <a href="{{ partner.instagram_link | escape }}" target="_blank" rel="noopener noreferrer" class="locator-profile-social__link" aria-label="{{ partner.location_name | escape }} on Instagram">
+                    <i class="icon-instagram-square" aria-hidden="true"></i>
+                  </a>
+                {%- endif -%}
+                {%- if partner.linkedin_link and partner.linkedin_link != '' -%}
+                  <a href="{{ partner.linkedin_link | escape }}" target="_blank" rel="noopener noreferrer" class="locator-profile-social__link" aria-label="{{ partner.location_name | escape }} on LinkedIn">
+                    <i class="icon-linkedin" aria-hidden="true"></i>
+                  </a>
+                {%- endif -%}
+                {%- if partner.youtube_link and partner.youtube_link != '' -%}
+                  <a href="{{ partner.youtube_link | escape }}" target="_blank" rel="noopener noreferrer" class="locator-profile-social__link" aria-label="{{ partner.location_name | escape }} on YouTube">
+                    <i class="icon-youtube-square" aria-hidden="true"></i>
+                  </a>
+                {%- endif -%}
+              </div>
+            {%- endif -%}
+
+          </div>
+        </aside>
+
+      </div>
+    </div>
+  </div>
+
+{% else %}
+
+  <div class="wrapper">
+    <div class="grid-container">
+      <div class="spacer xxxx-large"></div>
+      <p class="p-dark">Partner not found.</p>
+      <div class="spacer xxxx-large"></div>
+    </div>
+  </div>
+
+{% endif %}
