@@ -65,7 +65,7 @@ metadata: {
   ></ins-button>
 </div>
 
-{% comment %} Geocoder fallback: appended to bare postcodes when user searches without selecting from autocomplete {% endcomment %}
+{% comment %} Geocoder fallback country: appended to bare postcodes when user searches without selecting from autocomplete {% endcomment %}
 {%- include "modules/insites_cms/globals" -%}
 {%- assign loc_country = context.exports.global.loc_1_country | default: 'Australia' -%}
 {%- if loc_country == blank -%}{%- assign loc_country = 'Australia' -%}{%- endif -%}
