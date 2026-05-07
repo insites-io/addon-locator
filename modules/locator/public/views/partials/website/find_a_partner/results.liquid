@@ -65,7 +65,7 @@ metadata: {
   ></ins-button>
 </div>
 
-{% comment %} Locator Country {% endcomment %}
+{% comment %} Geocoder fallback: appended to bare postcodes when user searches without selecting from autocomplete {% endcomment %}
 {%- include "modules/insites_cms/globals" -%}
 {%- assign loc_country = context.exports.global.loc_1_country | default: 'Australia' -%}
 {%- if loc_country == blank -%}{%- assign loc_country = 'Australia' -%}{%- endif -%}
@@ -75,4 +75,4 @@ metadata: {
 {% function google_maps_key = "crm/controller/google_maps/get" %}
 {% assign google_maps_key = google_maps_key.key %}
 <script src="https://unpkg.com/@googlemaps/markerclusterer/dist/index.umd.js"></script>
-<script async src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_key }}&callback=initLocatorMap&loading=async"></script>
+<script async src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_key }}&libraries=places&callback=initLocatorMap&loading=async"></script>

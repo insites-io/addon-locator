@@ -269,12 +269,14 @@
   var currentLocation = '';
   var currentDistance = '15';
   var lastParams = null;
+  var searchLatLng = null;
   var selectedCategories = {};
   var lastStatusArgs = [0, '', ''];
   var searchTotal = 0;
 
   function clearAllFilters() {
     currentLocation = '';
+    searchLatLng = null;
     locationEl.setAttribute('value', '');
     syncDistanceState();
     fetchResults({ location: '', lat: '', lng: '', distance: '' }, true);
@@ -423,11 +425,13 @@
 
   locationEl.addEventListener('insInput', function (e) {
     currentLocation = (e.detail && e.detail.value) || '';
+    searchLatLng = null;
     syncDistanceState();
   });
 
   locationEl.addEventListener('insValueChange', function (e) {
     currentLocation = (e.detail && e.detail.value) || '';
+    searchLatLng = null;
     syncDistanceState();
   });
 
@@ -494,14 +498,20 @@
       return;
     }
 
+    if (searchLatLng) {
+      var displayLocation = buildDisplayLocation(currentLocation, null);
+      fetchResults({ location: currentLocation, lat: searchLatLng.lat, lng: searchLatLng.lng, distance: distance, displayLocation: displayLocation }, pushState);
+      return;
+    }
+
     if (!distance || !window.google || !window.google.maps) {
       var displayLoc = buildDisplayLocation(currentLocation, null);
       fetchResults({ location: currentLocation, lat: '', lng: '', distance: distance, displayLocation: displayLoc }, pushState);
       return;
     }
 
-    var country = window.locatorCountry || 'Australia';
-    var geocodeAddress = isPostcode(currentLocation) ? currentLocation.trim() + ', ' + country : currentLocation;
+    var country = window.locatorCountry;
+    var geocodeAddress = (isPostcode(currentLocation) && country) ? currentLocation.trim() + ', ' + country : currentLocation;
     var geocoder = new google.maps.Geocoder();
     geocoder.geocode({ address: geocodeAddress }, function (results, status) {
       if (status === 'OK' && results[0]) {
@@ -579,6 +589,7 @@
     if (e.target && e.target.classList.contains('locator-clear-btn')) {
       e.preventDefault();
       currentLocation = '';
+      searchLatLng = null;
       locationEl.setAttribute('value', '');
       if (distanceEl) { try { distanceEl.setValue(''); } catch (ex) {} }
       selectedCategories = {};
@@ -689,5 +700,23 @@
   } else {
     setupInitialPagination();
   }
+
+  // Initialize Google Places Autocomplete on the location input, with a fallback in case the API is not loaded yet
+  var autocompleteInitInterval = setInterval(function () {
+    if (!window.google || !window.google.maps || !window.google.maps.places) { return; }
+    var innerInput = locationEl.querySelector('input');
+    if (!innerInput) { return; }
+    clearInterval(autocompleteInitInterval);
+    var autocomplete = new google.maps.places.Autocomplete(innerInput, { types: ['geocode'] });
+    autocomplete.addListener('place_changed', function () {
+      var place = autocomplete.getPlace();
+      if (place && place.geometry && place.geometry.location) {
+        searchLatLng = { lat: place.geometry.location.lat(), lng: place.geometry.location.lng() };
+        currentLocation = innerInput.value || place.name || place.formatted_address || currentLocation;
+        locationEl.setAttribute('value', currentLocation);
+        syncDistanceState();
+      }
+    });
+  }, 300);
 
 }());
