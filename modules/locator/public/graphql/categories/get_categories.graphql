@@ -1,0 +1,18 @@
+query get_categories {
+  items: records(
+    per_page: 100
+    filter: {
+      table: { value: "modules/insites_locator/category" }
+      deleted_at: { exists: false }
+    }
+    sort: {
+      properties: [{ name: "category_name", order: ASC }]
+    }
+  ) {
+    results {
+      id
+      name: property(name: "category_name")
+      uuid: property(name: "uuid")
+    }
+  }
+}

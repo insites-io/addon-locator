@@ -1,0 +1,37 @@
+query get_my_location($user_uuid: String) {
+  relation: records(
+    per_page: 1
+    filter: {
+      table: { value: "modules/ins_locator/location_custom_field" }
+      deleted_at: { exists: false }
+      properties: [{ name: "user_uuid", value: $user_uuid }]
+    }
+  ) {
+    results {
+      location_uuid: property(name: "location_uuid")
+      location: related_record(
+        table: "modules/insites_locator/location"
+        join_on_property: "location_uuid"
+        foreign_property: "uuid"
+      ) {
+        id
+        location_name: property(name: "location_name")
+        email: property(name: "email")
+        phone_number: property(name: "phone_number")
+        website: property(name: "website")
+        category_uuid: property(name: "category_uuid")
+        short_description: property(name: "short_description")
+        long_description: property(name: "long_description")
+        status: property(name: "status")
+        location_image: property_upload(name: "location_image") {
+          url
+          file_name
+        }
+        image_1: property_upload(name: "image_1") {
+          url
+          file_name
+        }
+      }
+    }
+  }
+}

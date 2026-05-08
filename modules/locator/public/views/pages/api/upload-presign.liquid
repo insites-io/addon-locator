@@ -1,0 +1,15 @@
+---
+slug: api/locator/upload-presign
+format: json
+method: get
+searchable: false
+metadata: {
+    "status": "published",
+    "page_name": "API | Locator | S3 Upload",
+    "is_visible_to_search_engines": false,
+    "sitemap_enabled": false
+}
+---
+
+{%- graphql results = 'modules/locator/system/get_s3_upload', table: context.params.table, property: context.params.property -%}
+{{ results }}

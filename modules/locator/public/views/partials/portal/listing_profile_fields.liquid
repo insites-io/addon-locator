@@ -1,0 +1,163 @@
+<div class="spacer x-large"></div>
+<h2 class="heading-2-xxsmall">Profile</h2>
+<div class="spacer x-large"></div>
+
+{% comment %} Company Logo {% endcomment %}
+<div class="column-1">
+  <input type="hidden" id="locator-logo-url" name="{{ form.fields.properties.location_image.name }}" value="{{ data.location_image.url }}">
+  <ins-image-picker
+    id="locator-logo-picker"
+    value="{{ data.location_image.url }}"
+    file-name="{{ data.location_image.file_name }}"
+    img-type="logo"
+    upload-img-rec-width="120"
+    upload-img-rec-height="120"
+    upload-img-rec-file-size="25"
+    upload-img-file-formats="JPG, JPEG, PNG or SVG."
+    label="Company Logo or photo*"
+  ></ins-image-picker>
+</div>
+
+{% comment %} Company Name {% endcomment %}
+<div class="column-2">
+  <ins-input
+    label="Company Name*"
+    name="{{ form.fields.properties.location_name.name }}"
+    value="{{ data.location_name }}"
+    placeholder="Company Name"
+    validate
+    required
+    {% if form.errors['location_name'] %} has-error {% endif %}
+    error-message="{{ form.fields.properties.location_name.validation.rules.presence.message }}"
+  ></ins-input>
+</div>
+
+{% comment %} Email {% endcomment %}
+<div class="column-2">
+  <ins-input
+    label="Email*"
+    name="{{ form.fields.properties.email.name }}"
+    value="{{ data.email }}"
+    field="email"
+    placeholder="Email"
+    validate
+    required
+    {% if form.errors['email'] %} has-error {% endif %}
+    error-message="{{ form.errors['email'] | default: form.fields.properties.email.validation.rules.presence.message }}"
+  ></ins-input>
+</div>
+
+{% comment %} Phone Number {% endcomment %}
+<div class="column-2">
+  <ins-input-tel
+    id="listing-phone"
+    label="Phone Number*"
+    phonenum-value="{{ data.phone_number }}"
+    country-code="{{ data.phone_country_code | default: '61' }}"
+    phonenum-placeholder="Phone Number"
+    no-areacode
+    validate
+    required
+    {% if form.errors['phone_number'] %} has-error {% endif %}
+    error-message="{{ form.fields.properties.phone_number.validation.rules.presence.message }}"
+  ></ins-input-tel>
+  <input type="hidden" id="listing-phone-number" name="{{ form.fields.properties.phone_number.name }}" value="{{ data.phone_number }}">
+  <input type="hidden" id="listing-phone-country-code" name="{{ form.fields.properties.phone_country_code.name }}" value="{{ data.phone_country_code | default: '61' }}">
+</div>
+
+{% comment %} Website URL {% endcomment %}
+<div class="column-2">
+  <ins-input
+    label="Website URL*"
+    name="{{ form.fields.properties.website.name }}"
+    value="{{ data.website }}"
+    placeholder="Website URL"
+    validate
+    required
+    {% if form.errors['website'] %} has-error {% endif %}
+    error-message="{{ form.fields.properties.website.validation.rules.presence.message }}"
+  ></ins-input>
+</div>
+
+{% comment %} Partner Type {% endcomment %}
+<div class="column-2">
+  <ins-input-select
+    label="Partner Type*"
+    name="{{ form.fields.properties.category_uuid.name }}"
+    value="{{ data.category_uuid }}"
+    placeholder="Partner Type"
+    validate
+    required
+    {% if form.errors['category_uuid'] %} has-error {% endif %}
+    error-message="{{ form.fields.properties.category_uuid.validation.rules.presence.message }}"
+  >
+    {% for category in categories %}
+      <ins-input-select-option label="{{ category.name }}" value="{{ category.uuid }}"></ins-input-select-option>
+    {% endfor %}
+  </ins-input-select>
+</div>
+
+{% comment %} Partner Tier {% endcomment %}
+<div class="column-2">
+  <ins-input
+    label="Partner Tier"
+    name="partner_tier"
+    placeholder="Partner Tier"
+    readonly
+  ></ins-input>
+</div>
+
+{% comment %} Company Banner {% endcomment %}
+<div class="column-1">
+  <input type="hidden" id="locator-banner-url" name="{{ form.fields.properties.image_1.name }}" value="{{ data.image_1.url }}">
+  <ins-image-picker
+    id="locator-banner-picker"
+    value="{{ data.image_1.url }}"
+    file-name="{{ data.image_1.file_name }}"
+    img-type="banner"
+    upload-img-container="rectangle"
+    upload-img-rec-width="1440"
+    upload-img-rec-height="600"
+    upload-img-rec-file-size="25"
+    upload-img-file-formats="JPG, JPEG, PNG or SVG."
+    label="Company Banner"
+  ></ins-image-picker>
+</div>
+
+{% comment %} Short Description {% endcomment %}
+<div class="column-1">
+  <ins-textarea
+    label="Short Description*"
+    name="{{ form.fields.properties.short_description.name }}"
+    value="{{ data.short_description | strip_html }}"
+    placeholder="Short description of your company"
+    maxlength="150"
+    counter="decreasing"
+    validate
+    required
+    {% if form.errors['short_description'] %} has-error {% endif %}
+    error-message="{{ form.fields.properties.short_description.validation.rules.presence.message }}"
+  ></ins-textarea>
+</div>
+
+{% comment %} About Company — same rich-text editor (HTML) the admin uses {% endcomment %}
+<div class="column-1">
+  <ins-editor
+    label="About Company"
+    name="{{ form.fields.properties.long_description.name }}"
+    value="{{ data.long_description | escape }}"
+  ></ins-editor>
+</div>
+
+{% comment %} Submit {% endcomment %}
+<div class="column-1 text-right">
+  <div class="spacer small"></div>
+  <ins-button
+    label="Update details"
+    icon="icon-check-2"
+    type="submit"
+    solid
+    color="primary"
+    id="listing-profile-save-btn"
+  ></ins-button>
+</div>

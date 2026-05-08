@@ -1,0 +1,43 @@
+{%- log "Insites Locator Addon - Location Custom Field: Migration starting" -%}
+
+{%- parse_json properties -%}
+[
+  {
+    "attribute_type": "string",
+    "name": "user_uuid",
+    "belongs_to": "users",
+    "metadata": {
+      "label": "User UUID",
+      "weight": 1,
+      "ui_element": "select_data_source",
+      "display_field": "name"
+    }
+  }
+]
+{%- endparse_json -%}
+
+{%- graphql results, properties: properties -%}
+  mutation ($properties: [NestedPropertyInputType]!) {
+    item: admin_table_update(
+      physical_file_path: "modules/ins_locator/public/schema/location_custom_field.yml"
+      table: { properties: $properties }
+    ) {
+      id
+      name
+      physical_file_path
+      properties {
+        id
+        name
+        attribute_type
+        belongs_to
+        metadata
+        options
+        default_value
+        target_type
+        target_id
+      }
+    }
+  }
+{%- endgraphql -%}
+
+{% log results, type: "MIGRATION: location_custom_field" %}

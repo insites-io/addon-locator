@@ -81,3 +81,40 @@ When the user selects from the autocomplete dropdown, the lat/lng comes directly
 | `modules/locator/public/graphql/locations/get_locations_nearby.graphql` | Geo-distance search query |
 | `modules/locator/public/assets/scripts/locator.js` | All client-side logic |
 | `modules/locator/public/assets/styles/locator.css` | All locator styles |
+
+---
+
+## My Locator Listing (Portal)
+
+The My Locator Listing page (`/my-locator-listing`) lets portal users manage their public partner profile across three tabs: Profile, Location, and Social links.
+
+---
+
+### Data model
+
+#### Location record
+
+Location data is stored in the `modules/insites_locator/location` table (schema: `module-locator` repo at `pos/modules/insites_locator/private/schema/location.yml`).
+
+The location table has **no direct user field**. The association between a portal user and their location is stored in a separate join table:
+
+**`modules/ins_locator/location_custom_field`**
+
+| Property | Description |
+|---|---|
+| `user_uuid` | The portal user's `external_id` (CRM UUID) |
+| `location_uuid` | The location record's `uuid` property |
+
+To fetch the current user's location, query `location_custom_field` filtered by `user_uuid`, then join to the location via `related_record` on `location_uuid ↔ uuid`. See `get_my_location.graphql`.
+
+---
+
+### Key files
+
+| File | Purpose |
+|---|---|
+| `modules/locator/public/views/pages/portal/my-locator-listing.liquid` | Page entry point — fetches user, location, and categories |
+| `modules/locator/public/views/partials/portal/profile.liquid` | Profile tab form fields |
+| `modules/locator/public/forms/portal/locator_profile.liquid` | PlatformOS form definition for `modules/insites_locator/location` |
+| `modules/locator/public/graphql/locations/get_my_location.graphql` | Fetches the current user's location via `location_custom_field` join |
+| `modules/locator/public/graphql/categories/get_categories.graphql` | Fetches all categories for the Partner Type dropdown |

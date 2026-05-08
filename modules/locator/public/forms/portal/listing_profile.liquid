@@ -1,0 +1,53 @@
+---
+name: listing_profile
+resource: modules/insites_locator/location
+resource_owner: anyone
+flash_alert: Error-Listing-Profile
+flash_notice: Success-Listing-Profile
+redirect_to: my-locator-listing
+fields:
+  properties:
+    location_name:
+      validation:
+        presence:
+          message: Company name is required.
+    email:
+      validation:
+        presence:
+          message: Email is required.
+        email:
+          message: Please use a valid email address.
+    phone_number:
+      validation:
+        presence:
+          message: Phone number is required.
+    phone_country_code:
+    website:
+      validation:
+        presence:
+          message: Website URL is required.
+    category_uuid:
+      validation:
+        presence:
+          message: Partner type is required.
+    short_description:
+      validation:
+        presence:
+          message: Short description is required.
+    long_description:
+    location_image:
+    image_1:
+---
+
+{%- form
+    html-id: "listing-profile-form"
+    html-class: "insites-form insites-form-code"
+    html-novalidate: true
+    html-enctype: "multipart/form-data"
+    html-onsubmit: "return LocatorPortal.validateForm(event);" -%}
+
+  <div class="insites-form-grid">
+    {% include 'modules/locator/portal/listing_profile_fields', data: data %}
+  </div>
+
+{%- endform -%}
