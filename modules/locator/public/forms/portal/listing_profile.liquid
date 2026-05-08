@@ -39,12 +39,15 @@ fields:
     image_1:
 ---
 
+<h2 class="heading-2-xxsmall">Profile</h2>
+<div class="spacer x-large"></div>
+
 {%- form
     html-id: "listing-profile-form"
     html-class: "insites-form insites-form-code"
     html-novalidate: true
     html-enctype: "multipart/form-data"
-    html-onsubmit: "return LocatorPortal.validateForm(event);" -%}
+    html-onsubmit: "return LocatorPortal.validateForm(event);" -%}  
 
   <div class="insites-form-grid">
     {% include 'modules/locator/portal/listing_profile_fields', data: data %}

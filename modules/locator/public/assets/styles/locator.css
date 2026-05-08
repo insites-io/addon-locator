@@ -1,5 +1,3 @@
-/* ─── Portal listing — page heading ─────────────────────────────────────── */
-
 .heading-2-xxsmall {
   font-family: var(--font-family-01);
   font-size: 24px;
@@ -8,6 +6,18 @@
   letter-spacing: 0.24px;
   color: var(--font-color-head);
 }
+
+p {
+  color: var(--font-color-body);
+  font-family: var(--font-family-02);
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 150%; /* 24px */
+}  
+
+
+/* ─── Portal listing — page heading ─────────────────────────────────────── */
 
 .my-locator-listing .locator-listing__head-row {
   display: flex;
@@ -40,14 +50,24 @@
   line-height: 1.5;
 }
 
-.my-locator-listing .locator-listing__visibility-banner.is-hidden {
-  display: none;
-}
-
 .my-locator-listing .locator-listing__visibility-banner .icon-info {
   font-size: 16px;
   line-height: 16px;
   flex-shrink: 0;
+}
+
+/* ─── Portal listing — tabs ──────────────────────────────────────────────── */
+.my-locator-listing ins-tab .ins-tab {
+  border: none;
+  box-shadow: none;
+}
+
+.my-locator-listing .ins-tab-headers li {
+  margin-bottom: 0;
+}
+
+.my-locator-listing ins-tab-item > div {
+  padding: 40px 0;
 }
 
 /* ─── Portal listing — Phone + Website stack at ≤950px ──────────────────── */
@@ -1235,4 +1255,9 @@ ins-input-select input {
   body.locator-mobile-map-open .locator-mobile-map-bar--close {
     display: flex;
   }
+}
+
+/* ── Margins ── */
+.mt-n12 {
+  margin-top: -12px !important;
 }

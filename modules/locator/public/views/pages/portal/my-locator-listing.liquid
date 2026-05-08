@@ -36,36 +36,51 @@ authorization_policies:
         ></ins-toggle-switch>
       </div>
     </div>
+    <div class="spacer"></div>
     <p>Update your public profile and control whether you appear on the partner locator.</p>
   </div>
 
   <div class="spacer x-large"></div>
 
-  <div
-    class="locator-listing__visibility-banner {% if location.status == 'enabled' %}is-hidden{% endif %}"
-    id="locator-visibility-banner"
-  >
-    <i class="icon-info" aria-hidden="true"></i>
-    <span>Your listing is hidden. Changes will be saved but won't appear on the partner directory until you turn visibility on.</span>
+  <div id="locator-visibility-banner"{% if location.status == 'enabled' %} class="hide"{% endif %}>
+    <div class="locator-listing__visibility-banner">
+      <i class="icon-info" aria-hidden="true"></i>
+      <span>Your listing is hidden. Changes will be saved but won't appear on the partner directory until you turn visibility on.</span>      
+    </div>
+    <div class="spacer x-large"></div>
   </div>
 
-  <div class="spacer x-large"></div>
+  {%- liquid
+    assign active_tab = 'profile'
+    if context.flash
+      assign flash_msg = context.flash.notice | default: context.flash.alert
+      if flash_msg contains 'Listing-Location'
+        assign active_tab = 'location'
+      elsif flash_msg contains 'Listing-Social'
+        assign active_tab = 'social'
+      endif
+    endif
+  -%}
 
   <ins-tab>
-    <ins-tab-item label="Profile" active>
+    <ins-tab-item label="Profile" {% if active_tab == 'profile' %}active{% endif %}>
       {%- include_form 'modules/locator/listing_profile', id: location.id, data: location -%}
     </ins-tab-item>
-    <ins-tab-item label="Location">
+    <ins-tab-item label="Location" {% if active_tab == 'location' %}active{% endif %}>
+      {%- include_form 'modules/locator/listing_location', id: location.id, data: location -%}
     </ins-tab-item>
-    <ins-tab-item label="Social links">
+    <ins-tab-item label="Social links" {% if active_tab == 'social' %}active{% endif %}>
     </ins-tab-item>
   </ins-tab>
 </div>
 
+{% include 'modules/website/layout/googlemaps' %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.0/axios.min.js"></script>
 {%- if context.environment == "staging" -%}
+  <script src="{{ 'modules/portal/scripts/address-lookup.js' | asset_url }}"></script>
   <script src="{{ 'modules/locator/scripts/locator-portal.js' | asset_url }}"></script>
 {%- else -%}
+  <script src="{{ 'modules/portal/scripts/address-lookup.min.js' | asset_url }}"></script>
   <script src="{{ 'modules/locator/scripts/locator-portal.min.js' | asset_url }}"></script>
 {%- endif -%}
 
@@ -81,6 +96,22 @@ setTimeout(() => {
 <script>
 setTimeout(() => {
   App.events.notyf('error', "Error updating locator profile.");
+}, 200);
+</script>
+{%- endif -%}
+
+{%- if context.flash and context.flash.notice == "Success-Listing-Location" -%}
+<script>
+setTimeout(() => {
+  App.events.notyf('success', "Location has been updated.");
+}, 200);
+</script>
+{%- endif -%}
+
+{%- if context.flash and context.flash.alert == "Error-Listing-Location" -%}
+<script>
+setTimeout(() => {
+  App.events.notyf('error', "Error updating location.");
 }, 200);
 </script>
 {%- endif -%}

@@ -1,0 +1,49 @@
+---
+name: listing_location
+resource: modules/insites_locator/location
+resource_owner: anyone
+flash_alert: Error-Listing-Location
+flash_notice: Success-Listing-Location
+redirect_to: my-locator-listing
+fields:
+  properties:
+    address_1:
+      validation:
+        presence:
+          message: Address 1 is required.
+    address_2:
+    suburb:
+      validation:
+        presence:
+          message: Suburb is required.
+    state:
+      validation:
+        presence:
+          message: State is required.
+    postcode:
+      validation:
+        presence:
+          message: Postcode is required.
+    country:
+      validation:
+        presence:
+          message: Country is required.
+    latitude:
+    longitude:
+    geojson:
+---
+
+<h2 class="heading-2-xxsmall">Location</h2>
+<div class="spacer x-large"></div>
+
+{%- form
+    html-id: "listing-location-form"
+    html-class: "insites-form insites-form-code"
+    html-novalidate: true
+    html-onsubmit: "return LocatorPortal.validateForm(event);" -%}
+
+  <div class="insites-form-grid">
+    {% include 'modules/locator/portal/listing_location_fields', data: data %}
+  </div>
+
+{%- endform -%}

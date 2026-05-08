@@ -1,0 +1,124 @@
+{% comment %} Search Address — Google Places autocomplete (handled by address-lookup.js).
+   address-lookup.js fills field IDs of the form `{name}_address_1`, `{name}_suburb`, etc.
+   `name="listing"` is the prefix used for those IDs below.
+{% endcomment %}
+<div class="column-1">
+  <ins-input
+    address-lookup
+    id="listing_address_search"
+    name="listing"
+    label="Search Address"
+    placeholder="Search Address"
+    icon="icon-map-pin"
+  ></ins-input>
+</div>
+
+<input type="hidden" id="listing_latitude" name="{{ form.fields.properties.latitude.name }}" value="{{ data.latitude }}">
+<input type="hidden" id="listing_longitude" name="{{ form.fields.properties.longitude.name }}" value="{{ data.longitude }}">
+<input type="hidden" id="listing_geojson" name="{{ form.fields.properties.geojson.name }}" value="">
+
+
+{% comment %} Address 1 {% endcomment %}
+<div class="column-2">
+  <ins-input
+    form-address-field
+    id="listing_address_1"
+    label="Address 1*"
+    name="{{ form.fields.properties.address_1.name }}"
+    value="{{ data.address_1 }}"
+    placeholder="Address 1"
+    validate
+    required
+    {% if form.errors['address_1'] %} has-error {% endif %}
+    error-message="{{ form.fields.properties.address_1.validation.rules.presence.message }}"
+  ></ins-input>
+</div>
+
+{% comment %} Address 2 {% endcomment %}
+<div class="column-2">
+  <ins-input
+    form-address-field
+    id="listing_address_2"
+    label="Address 2"
+    name="{{ form.fields.properties.address_2.name }}"
+    value="{{ data.address_2 }}"
+    placeholder="Address 2"
+  ></ins-input>
+</div>
+
+{% comment %} Suburb {% endcomment %}
+<div class="column-2">
+  <ins-input
+    form-address-field
+    id="listing_suburb"
+    label="Suburb*"
+    name="{{ form.fields.properties.suburb.name }}"
+    value="{{ data.suburb }}"
+    placeholder="Suburb"
+    validate
+    required
+    {% if form.errors['suburb'] %} has-error {% endif %}
+    error-message="{{ form.fields.properties.suburb.validation.rules.presence.message }}"
+  ></ins-input>
+</div>
+
+{% comment %} State {% endcomment %}
+<div class="column-2">
+  <ins-input
+    form-address-field
+    id="listing_state"
+    label="State*"
+    name="{{ form.fields.properties.state.name }}"
+    value="{{ data.state }}"
+    placeholder="State"
+    validate
+    required
+    {% if form.errors['state'] %} has-error {% endif %}
+    error-message="{{ form.fields.properties.state.validation.rules.presence.message }}"
+  ></ins-input>
+</div>
+
+{% comment %} Postcode {% endcomment %}
+<div class="column-2">
+  <ins-input
+    form-address-field
+    id="listing_postcode"
+    label="Postcode*"
+    name="{{ form.fields.properties.postcode.name }}"
+    value="{{ data.postcode }}"
+    placeholder="Postcode"
+    validate
+    required
+    {% if form.errors['postcode'] %} has-error {% endif %}
+    error-message="{{ form.fields.properties.postcode.validation.rules.presence.message }}"
+  ></ins-input>
+</div>
+
+{% comment %} Country {% endcomment %}
+<div class="column-2">
+  <ins-input
+    form-address-field
+    id="listing_country"
+    label="Country*"
+    name="{{ form.fields.properties.country.name }}"
+    value="{{ data.country }}"
+    placeholder="Country"
+    validate
+    required
+    {% if form.errors['country'] %} has-error {% endif %}
+    error-message="{{ form.fields.properties.country.validation.rules.presence.message }}"
+  ></ins-input>
+</div>
+
+{% comment %} Submit {% endcomment %}
+<div class="column-1 text-right">
+  <div class="spacer small"></div>
+  <ins-button
+    label="Update details"
+    icon="icon-check-2"
+    type="submit"
+    solid
+    color="primary"
+    id="listing-location-save-btn"
+  ></ins-button>
+</div>

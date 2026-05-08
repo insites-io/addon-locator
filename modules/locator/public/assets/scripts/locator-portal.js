@@ -8,9 +8,9 @@
       if (visibilityToggle && visibilityBanner) {
         visibilityToggle.addEventListener('insToggle', function (e) {
           if (e.detail && e.detail.checked) {
-            visibilityBanner.classList.add('is-hidden');
+            visibilityBanner.classList.add('hide');
           } else {
-            visibilityBanner.classList.remove('is-hidden');
+            visibilityBanner.classList.remove('hide');
           }
         });
       }
@@ -94,21 +94,31 @@
     validateForm: async function (event) {
       if (event) event.preventDefault();
 
-      var formElem = event ? event.target : document.getElementById('listing-profile-form');
+      var formElem = event ? event.target : null;
       if (!formElem) return false;
 
-      var phoneEl = document.getElementById('listing-phone');
+      var phoneEl = formElem.querySelector('#listing-phone');
       if (phoneEl) {
         var values = await phoneEl.getValues();
         document.getElementById('listing-phone-number').value = values.phone_number;
         document.getElementById('listing-phone-country-code').value = values.country_code;
       }
 
+      var latEl = formElem.querySelector('#listing_latitude');
+      var lngEl = formElem.querySelector('#listing_longitude');
+      var geojsonEl = formElem.querySelector('#listing_geojson');
+      if (latEl && lngEl && geojsonEl && latEl.value && lngEl.value) {
+        geojsonEl.value = JSON.stringify({
+          type: 'Point',
+          coordinates: [parseFloat(lngEl.value), parseFloat(latEl.value)]
+        });
+      }
+
       var isValid = await App.validation.validateForm(formElem);
       if (!isValid) return false;
 
       LocatorPortal.disableFormButtons(formElem, true);
-      var saveBtn = document.getElementById('listing-profile-save-btn');
+      var saveBtn = formElem.querySelector('ins-button[type="submit"]');
       if (saveBtn) saveBtn.loading = true;
       formElem.submit();
       return true;
