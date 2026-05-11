@@ -114,6 +114,8 @@
         });
       }
 
+      LocatorPortal.normalizeUrlFields(formElem);
+
       var isValid = await App.validation.validateForm(formElem);
       if (!isValid) return false;
 
@@ -127,6 +129,16 @@
     disableFormButtons: function (formElem, state) {
       var buttons = formElem.querySelectorAll('ins-button');
       buttons.forEach(function (btn) { btn.disabled = state; });
+    },
+
+    normalizeUrlFields: function (formElem) {
+      var urlInputs = formElem.querySelectorAll('[url-field]');
+      urlInputs.forEach(function (input) {
+        var value = (input.value || '').trim();
+        if (value && !/^https?:\/\//i.test(value)) {
+          input.value = 'https://' + value;
+        }
+      });
     }
 
   };

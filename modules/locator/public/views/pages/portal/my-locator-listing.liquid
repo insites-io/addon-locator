@@ -70,6 +70,7 @@ authorization_policies:
       {%- include_form 'modules/locator/listing_location', id: location.id, data: location -%}
     </ins-tab-item>
     <ins-tab-item label="Social links" {% if active_tab == 'social' %}active{% endif %}>
+      {%- include_form 'modules/locator/listing_social', id: location.id, data: location -%}
     </ins-tab-item>
   </ins-tab>
 </div>
@@ -112,6 +113,22 @@ setTimeout(() => {
 <script>
 setTimeout(() => {
   App.events.notyf('error', "Error updating location.");
+}, 200);
+</script>
+{%- endif -%}
+
+{%- if context.flash and context.flash.notice == "Success-Listing-Social" -%}
+<script>
+setTimeout(() => {
+  App.events.notyf('success', "Social links have been updated.");
+}, 200);
+</script>
+{%- endif -%}
+
+{%- if context.flash and context.flash.alert == "Error-Listing-Social" -%}
+<script>
+setTimeout(() => {
+  App.events.notyf('error', "Error updating social links.");
 }, 200);
 </script>
 {%- endif -%}

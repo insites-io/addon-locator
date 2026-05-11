@@ -68,6 +68,7 @@
     name="{{ form.fields.properties.website.name }}"
     value="{{ data.website }}"
     placeholder="Website URL"
+    url-field
     validate
     required
     {% if form.errors['website'] %} has-error {% endif %}

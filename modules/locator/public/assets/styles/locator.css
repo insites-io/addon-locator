@@ -67,7 +67,7 @@ p {
 }
 
 .my-locator-listing ins-tab-item > div {
-  padding: 40px 0;
+  padding: 40px 0 0;
 }
 
 /* ─── Portal listing — Phone + Website stack at ≤950px ──────────────────── */

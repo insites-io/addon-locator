@@ -1,0 +1,77 @@
+{% comment %} Facebook {% endcomment %}
+<div class="column-2">
+  <ins-input
+    label="Facebook"
+    name="{{ form.fields.properties.facebook_link.name }}"
+    value="{{ data.facebook_link }}"
+    placeholder="https://facebook.com/your-page"
+    url-field
+  ></ins-input>
+</div>
+
+{% comment %} X (Twitter) {% endcomment %}
+<div class="column-2">
+  <ins-input
+    label="X"
+    name="{{ form.fields.properties.twitter_link.name }}"
+    value="{{ data.twitter_link }}"
+    placeholder="https://x.com/your-handle"
+    url-field
+  ></ins-input>
+</div>
+
+{% comment %} YouTube {% endcomment %}
+<div class="column-2">
+  <ins-input
+    label="YouTube"
+    name="{{ form.fields.properties.youtube_link.name }}"
+    value="{{ data.youtube_link }}"
+    placeholder="https://youtube.com/@your-channel"
+    url-field
+  ></ins-input>
+</div>
+
+{% comment %} LinkedIn {% endcomment %}
+<div class="column-2">
+  <ins-input
+    label="LinkedIn"
+    name="{{ form.fields.properties.linkedin_link.name }}"
+    value="{{ data.linkedin_link }}"
+    placeholder="https://linkedin.com/company/your-page"
+    url-field
+  ></ins-input>
+</div>
+
+{% comment %} Instagram {% endcomment %}
+<div class="column-2">
+  <ins-input
+    label="Instagram"
+    name="{{ form.fields.properties.instagram_link.name }}"
+    value="{{ data.instagram_link }}"
+    placeholder="https://instagram.com/your-handle"
+    url-field
+  ></ins-input>
+</div>
+
+{% comment %} Snapchat {% endcomment %}
+<div class="column-2">
+  <ins-input
+    label="Snapchat"
+    name="{{ form.fields.properties.snapchat_link.name }}"
+    value="{{ data.snapchat_link }}"
+    placeholder="Snapchat"
+  ></ins-input>
+</div>
+
+{% comment %} Submit {% endcomment %}
+<div class="column-1 text-right">
+  <div class="spacer small"></div>
+  <ins-button
+    label="Update details"
+    icon="icon-check-2"
+    type="submit"
+    solid
+    color="primary"
+    id="listing-social-save-btn"
+  ></ins-button>
+</div>

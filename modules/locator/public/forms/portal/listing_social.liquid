@@ -1,0 +1,31 @@
+---
+name: listing_social
+resource: modules/insites_locator/location
+resource_owner: anyone
+flash_alert: Error-Listing-Social
+flash_notice: Success-Listing-Social
+redirect_to: my-locator-listing
+fields:
+  properties:
+    facebook_link:
+    twitter_link:
+    youtube_link:
+    linkedin_link:
+    instagram_link:
+    snapchat_link:
+---
+
+<h2 class="heading-2-xxsmall">Social links</h2>
+<div class="spacer x-large"></div>
+
+{%- form
+    html-id: "listing-social-form"
+    html-class: "insites-form insites-form-code"
+    html-novalidate: true
+    html-onsubmit: "return LocatorPortal.validateForm(event);" -%}
+
+  <div class="insites-form-grid">
+    {% include 'modules/locator/portal/listing_social_fields', data: data %}
+  </div>
+
+{%- endform -%}
