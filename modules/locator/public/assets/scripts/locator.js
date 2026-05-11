@@ -76,7 +76,7 @@
           '<div class="locator-map-card__identity">' +
             '<p class="locator-map-card__name">' + p.name + '</p>' +
           '</div>' +
-          (p.tag ? '<span class="locator-tag locator-tag--' + p.tag + '"><i class="icon-check"></i> ' + p.tagLabel + '</span>' : '') +
+          (p.tag ? '<ins-tag class="locator-tag locator-tag--' + p.tag + '" label="' + p.tagLabel + '" icon="icon-check-2"></ins-tag>' : '') +
         '</div>' +
         '<p class="locator-map-card__desc">' + p.desc + '</p>' +
         '<p class="locator-map-card__meta"><i class="icon-map-pin"></i> ' + p.address + '</p>' +

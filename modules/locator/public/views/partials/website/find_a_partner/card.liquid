@@ -55,7 +55,11 @@ metadata: {
         <p class="locator-card__name">{{ location.location_name }}</p>
       </div>
       {% if location.category %}
-        <span class="locator-tag locator-tag--{{ location.category.slug }}"><i class="icon-check"></i> {{ location.category.name }}</span>
+        <ins-tag
+          class="locator-tag locator-tag--{{ location.category.slug }}"
+          label="{{ location.category.name }}"
+          icon="icon-check-2"
+        ></ins-tag>
       {% endif %}
     </div>
     {% if desc != '' %}
