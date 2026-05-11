@@ -13,6 +13,16 @@ metadata: {
     "sitemap_order": "1", 
     "sitemap_change_frequency": "weekly"    
 }
+dynamic_cache:
+    layout: true
+    key: >
+        {%- parse_json models -%}
+        [
+          "modules/insites_locator/location",
+          "modules/insites_locator/category"
+        ]
+        {%- endparse_json -%}
+        {%- include "modules/website/cache/generate_cache_key", models: models -%}
 ---
 
 {% if context.params.slug2 %}

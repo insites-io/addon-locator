@@ -15,6 +15,7 @@ metadata: {
 }
 authorization_policies:
   - modules/portal/is_user_logged_in
+#dynamic_cache is not applicable for this page as it contains forms
 ---
 
 {%- graphql user = 'modules/portal/account/get_current_user' | dig: 'current_user' -%}
