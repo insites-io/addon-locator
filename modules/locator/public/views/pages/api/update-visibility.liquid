@@ -1,0 +1,31 @@
+---
+slug: api/locator/update-visibility
+format: json
+method: get
+searchable: false
+metadata: {
+    "status": "published",
+    "page_name": "API | Locator | Update Visibility",
+    "is_visible_to_search_engines": false,
+    "sitemap_enabled": false
+}
+---
+
+{%- assign user_uuid = context.current_user.external_id -%}
+{%- assign new_status = context.params.status -%}
+
+{%- if user_uuid == blank -%}
+  { "ok": false, "error": "unauthorized" }
+{%- elsif new_status != 'enabled' and new_status != 'disabled' -%}
+  { "ok": false, "error": "invalid_status" }
+{%- else -%}
+  {%- graphql location_result = 'modules/locator/locations/get_my_location', user_uuid: user_uuid -%}
+  {%- assign location = location_result | dig: 'relation' | dig: 'results' | first | dig: 'location' -%}
+
+  {%- if location == blank or location.id == blank -%}
+    { "ok": false, "error": "location_not_found" }
+  {%- else -%}
+    {%- graphql result = 'modules/locator/locations/update_listing_status', id: location.id, status: new_status -%}
+    { "ok": true, "status": "{{ new_status }}" }
+  {%- endif -%}
+{%- endif -%}

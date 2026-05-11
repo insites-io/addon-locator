@@ -7,11 +7,13 @@
       var visibilityBanner = document.getElementById('locator-visibility-banner');
       if (visibilityToggle && visibilityBanner) {
         visibilityToggle.addEventListener('insToggle', function (e) {
-          if (e.detail && e.detail.checked) {
+          var checked = e.detail && e.detail.checked;
+          if (checked) {
             visibilityBanner.classList.add('hide');
           } else {
             visibilityBanner.classList.remove('hide');
           }
+          LocatorPortal.updateVisibility(checked ? 'enabled' : 'disabled');
         });
       }
 
@@ -138,6 +140,25 @@
         if (value && !/^https?:\/\//i.test(value)) {
           input.value = 'https://' + value;
         }
+      });
+    },
+
+    updateVisibility: function (status) {
+      axios.get('/api/locator/update-visibility', {
+        params: { status: status },
+        headers: { 'Accept': 'application/json' }
+      }).then(function (response) {
+        if (!response.data || !response.data.ok) {
+          App.events.notyf('error', 'Failed to update visibility.');
+          return;
+        }
+        if (status === 'enabled') {
+          App.events.notyf('success', 'Your listing is no longer visible on the partner directory.');
+        } else {
+          App.events.notyf('success', 'Your listing is now visible on the partner directory.');
+        }
+      }).catch(function () {
+        App.events.notyf('error', 'Failed to update visibility.');
       });
     }
 

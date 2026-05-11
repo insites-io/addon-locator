@@ -1,0 +1,14 @@
+mutation update_listing_status($id: ID!, $status: String!) {
+  items: record_update(
+    id: $id,
+    record: {
+      table: "modules/insites_locator/location",
+      properties: [
+        { name: "status", value: $status }
+      ]
+    }
+  ) {
+    id
+    properties
+  }
+}
