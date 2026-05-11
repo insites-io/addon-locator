@@ -83,13 +83,14 @@ metadata: {
         {%- if partner.website and partner.website != '' -%}
           <div class="locator-profile-actions-col">
             <div class="locator-profile-actions">
-              <a href="{{ partner.website | escape }}" target="_blank" rel="noopener noreferrer">
+              <a href="{{ partner.website | escape }}" target="_blank" rel="noopener noreferrer" aria-label="Open website (opens in new tab)">
                 <ins-button
                   label="Open website"
                   icon-right="icon-arrow-up-right"
                   solid
                   color="primary"
                   class="full-width"
+                  aria-hidden="true"
                 ></ins-button>
               </a>
             </div>
@@ -114,7 +115,7 @@ metadata: {
         <aside class="locator-profile-sidebar">
           <div class="locator-profile-contact-card">
 
-            <p class="locator-profile-contact-card__title">Contact us</p>
+            <h2 class="locator-profile-contact-card__title">Contact us</h2>
             <div class="spacer small"></div>
 
             <div class="locator-profile-contact-list">
@@ -141,6 +142,7 @@ metadata: {
                   <i class="icon-globals" aria-hidden="true"></i>
                   <a href="{{ partner.website | escape }}" target="_blank" rel="noopener noreferrer">
                     {{- partner.website | remove: 'https://' | remove: 'http://' | remove: 'www.' -}}
+                    <span class="show-for-sr"> (opens in new tab)</span>
                   </a>
                 </div>
               {%- endif -%}
@@ -155,31 +157,31 @@ metadata: {
 
             {%- if has_social -%}
               <div class="spacer large"></div>
-              <p class="locator-profile-contact-card__title">Follow us</p>
+              <h2 class="locator-profile-contact-card__title">Follow us</h2>
               <div class="spacer small"></div>
               <div class="locator-profile-social">
                 {%- if partner.facebook_link and partner.facebook_link != '' -%}
-                  <a href="{{ partner.facebook_link | escape }}" target="_blank" rel="noopener noreferrer" class="locator-profile-social__link" aria-label="{{ partner.location_name | escape }} on Facebook">
+                  <a href="{{ partner.facebook_link | escape }}" target="_blank" rel="noopener noreferrer" class="locator-profile-social__link" aria-label="{{ partner.location_name | escape }} on Facebook (opens in new tab)">
                     <i class="icon-facebook-square" aria-hidden="true"></i>
                   </a>
                 {%- endif -%}
                 {%- if partner.twitter_link and partner.twitter_link != '' -%}
-                  <a href="{{ partner.twitter_link | escape }}" target="_blank" rel="noopener noreferrer" class="locator-profile-social__link" aria-label="{{ partner.location_name | escape }} on X / Twitter">
+                  <a href="{{ partner.twitter_link | escape }}" target="_blank" rel="noopener noreferrer" class="locator-profile-social__link" aria-label="{{ partner.location_name | escape }} on X / Twitter (opens in new tab)">
                     <i class="icon-social-x-square" aria-hidden="true"></i>
                   </a>
                 {%- endif -%}
                 {%- if partner.instagram_link and partner.instagram_link != '' -%}
-                  <a href="{{ partner.instagram_link | escape }}" target="_blank" rel="noopener noreferrer" class="locator-profile-social__link" aria-label="{{ partner.location_name | escape }} on Instagram">
+                  <a href="{{ partner.instagram_link | escape }}" target="_blank" rel="noopener noreferrer" class="locator-profile-social__link" aria-label="{{ partner.location_name | escape }} on Instagram (opens in new tab)">
                     <i class="icon-instagram-square" aria-hidden="true"></i>
                   </a>
                 {%- endif -%}
                 {%- if partner.linkedin_link and partner.linkedin_link != '' -%}
-                  <a href="{{ partner.linkedin_link | escape }}" target="_blank" rel="noopener noreferrer" class="locator-profile-social__link" aria-label="{{ partner.location_name | escape }} on LinkedIn">
+                  <a href="{{ partner.linkedin_link | escape }}" target="_blank" rel="noopener noreferrer" class="locator-profile-social__link" aria-label="{{ partner.location_name | escape }} on LinkedIn (opens in new tab)">
                     <i class="icon-linkedin" aria-hidden="true"></i>
                   </a>
                 {%- endif -%}
                 {%- if partner.youtube_link and partner.youtube_link != '' -%}
-                  <a href="{{ partner.youtube_link | escape }}" target="_blank" rel="noopener noreferrer" class="locator-profile-social__link" aria-label="{{ partner.location_name | escape }} on YouTube">
+                  <a href="{{ partner.youtube_link | escape }}" target="_blank" rel="noopener noreferrer" class="locator-profile-social__link" aria-label="{{ partner.location_name | escape }} on YouTube (opens in new tab)">
                     <i class="icon-youtube-square" aria-hidden="true"></i>
                   </a>
                 {%- endif -%}
@@ -195,12 +197,6 @@ metadata: {
 
 {% else %}
 
-  <div class="wrapper">
-    <div class="grid-container">
-      <div class="spacer xxxx-large"></div>
-      <p class="p-dark">Partner not found.</p>
-      <div class="spacer xxxx-large"></div>
-    </div>
-  </div>
+  {%- redirect_to '/404' -%}
 
 {% endif %}

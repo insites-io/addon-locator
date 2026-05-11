@@ -12,10 +12,14 @@
       locatorList.classList.add('is-grid');
       gridBtn.classList.add('is-active');
       listBtn.classList.remove('is-active');
+      gridBtn.setAttribute('aria-pressed', 'true');
+      listBtn.setAttribute('aria-pressed', 'false');
     } else {
       locatorList.classList.remove('is-grid');
       listBtn.classList.add('is-active');
       gridBtn.classList.remove('is-active');
+      listBtn.setAttribute('aria-pressed', 'true');
+      gridBtn.setAttribute('aria-pressed', 'false');
     }
   }
 
@@ -66,6 +70,14 @@
   var searchCenter = null;
   var userMarker = null;
 
+  function escapeAttr(str) {
+    return String(str == null ? '' : str)
+      .replace(/&/g, '&amp;')
+      .replace(/"/g, '&quot;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  }
+
   function buildCardHTML(p) {
     return '<div class="locator-map-card">' +
       '<div class="locator-map-card__logo">' +
@@ -79,10 +91,10 @@
           (p.tag ? '<ins-tag class="locator-tag locator-tag--' + p.tag + '" label="' + p.tagLabel + '" icon="icon-check-2"></ins-tag>' : '') +
         '</div>' +
         '<p class="locator-map-card__desc">' + p.desc + '</p>' +
-        '<p class="locator-map-card__meta"><i class="icon-map-pin"></i> ' + p.address + '</p>' +
-        (p.phone ? '<p class="locator-map-card__meta"><i class="icon-phone-1"></i> ' + p.phone + '</p>' : '') +
+        '<p class="locator-map-card__meta"><i class="icon-map-pin" aria-hidden="true"></i> ' + p.address + '</p>' +
+        (p.phone ? '<p class="locator-map-card__meta"><i class="icon-phone-1" aria-hidden="true"></i> ' + p.phone + '</p>' : '') +
         '<div class="locator-map-card__actions">' +
-          '<a href="' + p.href + '" class="locator-map-card__view-btn">View</a>' +
+          '<a href="' + p.href + '" class="locator-map-card__view-btn" aria-label="View ' + escapeAttr(p.name) + '">View</a>' +
         '</div>' +
       '</div>' +
     '</div>';
@@ -393,7 +405,7 @@
     if (!totalPages || totalPages <= 1) { return ''; }
     var html = '';
     for (var i = 1; i <= totalPages; i++) {
-      html += '<button class="locator-page-btn' + (i === currentPage ? ' is-active' : '') + '" type="button" data-page="' + i + '">' + i + '</button>';
+      html += '<button class="locator-page-btn' + (i === currentPage ? ' is-active' : '') + '" type="button" data-page="' + i + '" aria-label="Page ' + i + '"' + (i === currentPage ? ' aria-current="page"' : '') + '>' + i + '</button>';
     }
     return html;
   }
@@ -546,7 +558,7 @@
       history.pushState({ search: params.location, distance: params.distance, lat: params.lat, lng: params.lng }, '', pageUrl);
     }
 
-    locatorList.innerHTML = '<div class="locator-loading"><i class="icon-spinner"></i></div>';
+    locatorList.innerHTML = '<div class="locator-loading" role="status" aria-live="polite"><i class="icon-spinner" aria-hidden="true"></i><span class="show-for-sr">Loading results…</span></div>';
 
     fetch(apiUrl)
       .then(function (res) { return res.json(); })
@@ -649,7 +661,7 @@
     if (totalPages <= 1) { paginationEl.innerHTML = ''; return; }
     var html = '';
     for (var p = 1; p <= totalPages; p++) {
-      html += '<button class="locator-page-btn' + (p === ssrPage ? ' is-active' : '') + '" data-page="' + p + '" type="button">' + p + '</button>';
+      html += '<button class="locator-page-btn' + (p === ssrPage ? ' is-active' : '') + '" data-page="' + p + '" type="button" aria-label="Page ' + p + '"' + (p === ssrPage ? ' aria-current="page"' : '') + '>' + p + '</button>';
     }
     paginationEl.innerHTML = html;
     var btns = paginationEl.querySelectorAll('.locator-page-btn');

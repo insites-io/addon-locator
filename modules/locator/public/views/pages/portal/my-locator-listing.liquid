@@ -29,10 +29,11 @@ authorization_policies:
     <div class="locator-listing__head-row">
       <h1 class="heading-1-xsmall">My locator listing</h1>
       <div class="locator-listing__visibility">
-        <span class="form-label">Public Visibility:</span>
+        <span class="form-label" id="locator-visibility-label">Public Visibility:</span>
         <ins-toggle-switch
           id="locator-visibility"
           name="visibility"
+          aria-labelledby="locator-visibility-label"
           {% if location.status == 'enabled' %}checked{% endif %}
         ></ins-toggle-switch>
       </div>
@@ -43,7 +44,7 @@ authorization_policies:
 
   <div class="spacer x-large"></div>
 
-  <div id="locator-visibility-banner"{% if location.status == 'enabled' %} class="hide"{% endif %}>
+  <div id="locator-visibility-banner" role="status" aria-live="polite"{% if location.status == 'enabled' %} class="hide"{% endif %}>
     <div class="locator-listing__visibility-banner">
       <i class="icon-info" aria-hidden="true"></i>
       <span>Your listing is hidden. Changes will be saved but won't appear on the partner directory until you turn visibility on.</span>      
