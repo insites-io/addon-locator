@@ -41,7 +41,7 @@ metadata: {
   {%- comment -%} Banner {%- endcomment -%}
   <div class="locator-profile-banner">
     {%- if partner.image_1.url -%}
-      <img src="{{ partner.image_1.url }}" alt="" class="locator-profile-banner__img" aria-hidden="true">
+      <img src="{{ partner.image_1.url | replace: ' ', '%20' }}" alt="" class="locator-profile-banner__img" aria-hidden="true">
     {%- endif -%}
     <div class="locator-profile-banner__overlay" aria-hidden="true"></div>
   </div>
@@ -54,7 +54,7 @@ metadata: {
         <div class="locator-profile-logo-col">
           <div class="locator-profile-logo">
             {%- if partner.location_image.url -%}
-              <img src="{{ partner.location_image.url }}" alt="{{ partner.location_name | escape }}">
+              <img src="{{ partner.location_image.url | replace: ' ', '%20' }}" alt="{{ partner.location_name | escape }}">
             {%- else -%}
               {%- include 'modules/website/layout/placeholder_image' -%}
             {%- endif -%}
@@ -127,7 +127,7 @@ metadata: {
               {%- endif -%}
               {%- if phone_full != '' -%}
                 <div class="locator-profile-contact-row">
-                  <i class="icon-phone1" aria-hidden="true"></i>
+                  <i class="icon-phone-1" aria-hidden="true"></i>
                   <span>{{ phone_full }}</span>
                 </div>
               {%- endif -%}
