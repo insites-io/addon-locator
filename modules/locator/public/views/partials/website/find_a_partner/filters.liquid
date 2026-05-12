@@ -16,10 +16,14 @@ metadata: {
         <div class="locator-search-bar__left">
           <ins-input
             id="locator-location"
-            name="location"
+            name="locator"
+            address-lookup
             placeholder="Enter your Suburb or Post Code"
             icon="icon-search-1"
           ></ins-input>
+          {% comment %} Hidden inputs populated by AddressLookup when a suggestion is picked. Read in doSearch() to skip the geocoder fallback. {% endcomment %}
+          <input type="hidden" id="locator_latitude" name="locator_latitude">
+          <input type="hidden" id="locator_longitude" name="locator_longitude">
 
           <ins-input-select
             id="locator-distance"

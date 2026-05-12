@@ -45,30 +45,71 @@
 (function () {
   'use strict';
 
+  // Styling is controlled by the map style associated with LOCATOR_MAP_ID in Google Cloud Console.
+  var LOCATOR_MAP_ID = 'DEMO_MAP_ID';
+
   var PIN_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="34" viewBox="0 0 24 34">' +
     '<path d="M12 0C5.373 0 0 5.373 0 12c0 8.837 12 22 12 22S24 20.837 24 12C24 5.373 18.627 0 12 0z" fill="#05051D"/>' +
     '<circle cx="12" cy="12" r="4" fill="white"/></svg>';
 
-  var MAP_STYLES = [
-    { elementType: 'geometry', stylers: [{ color: '#f5f5f5' }] },
-    { elementType: 'labels.icon', stylers: [{ visibility: 'off' }] },
-    { elementType: 'labels.text.fill', stylers: [{ color: '#616161' }] },
-    { elementType: 'labels.text.stroke', stylers: [{ color: '#f5f5f5' }] },
-    { featureType: 'poi', stylers: [{ visibility: 'off' }] },
-    { featureType: 'transit', stylers: [{ visibility: 'off' }] },
-    { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#ffffff' }] },
-    { featureType: 'road.arterial', elementType: 'labels.text.fill', stylers: [{ color: '#757575' }] },
-    { featureType: 'road.highway', elementType: 'geometry', stylers: [{ color: '#dadada' }] },
-    { featureType: 'road.highway', elementType: 'labels.text.fill', stylers: [{ color: '#616161' }] },
-    { featureType: 'road.local', elementType: 'labels.text.fill', stylers: [{ color: '#9e9e9e' }] },
-    { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#c9c9c9' }] },
-    { featureType: 'water', elementType: 'labels.text.fill', stylers: [{ color: '#9e9e9e' }] }
-  ];
-
-  var map, infoWindow, pinIcon, pinIconActive, colorMain, colorErrorHover, userPinIcon;
+  var map, infoWindow, colorMain, colorErrorHover;
   var clustererInstance = null;
   var searchCenter = null;
   var userMarker = null;
+
+  function buildPinEl(svg) {
+    var el = document.createElement('div');
+    el.className = 'locator-pin';
+    el.innerHTML = svg;
+    el.style.transformOrigin = '50% 100%';
+    el.style.transition = 'transform 0.15s ease-out';
+    return el;
+  }
+
+  function buildUserPinEl() {
+    var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="40" viewBox="0 0 24 34">' +
+      '<path d="M12 0C5.373 0 0 5.373 0 12c0 8.837 12 22 12 22S24 20.837 24 12C24 5.373 18.627 0 12 0z" fill="' + colorErrorHover + '"/>' +
+      '<circle cx="12" cy="12" r="4" fill="white"/></svg>';
+    return buildPinEl(svg);
+  }
+
+  function buildClusterEl(count) {
+    var svg = '<svg fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 54 54">' +
+      '<circle cx="27" cy="27" r="23" fill="none" stroke="' + colorMain + '" stroke-width="3" stroke-opacity="0.1" stroke-dasharray="32.17 16" stroke-linecap="butt"/>' +
+      '<circle cx="27" cy="27" r="19" fill="none" stroke="' + colorMain + '" stroke-width="3" stroke-opacity="0.4" stroke-dasharray="27.79 12" stroke-linecap="butt"/>' +
+      '<circle cx="27" cy="27" r="15" fill="none" stroke="' + colorMain + '" stroke-width="3" stroke-opacity="0.6" stroke-dasharray="23.42 8" stroke-linecap="butt"/>' +
+      '<circle cx="27" cy="27" r="12" fill="' + colorMain + '"/>' +
+      '</svg>';
+
+    var wrapper = document.createElement('div');
+    wrapper.className = 'locator-cluster';
+    wrapper.style.position = 'relative';
+    wrapper.style.width = '54px';
+    wrapper.style.height = '54px';
+    // AdvancedMarkerElement anchors at bottom-center; shift down so the SVG center aligns with the position.
+    wrapper.style.transform = 'translateY(50%)';
+
+    var bg = document.createElement('div');
+    bg.style.position = 'absolute';
+    bg.style.inset = '0';
+    bg.innerHTML = svg;
+    wrapper.appendChild(bg);
+
+    var label = document.createElement('span');
+    label.textContent = String(count);
+    label.style.position = 'absolute';
+    label.style.inset = '0';
+    label.style.display = 'flex';
+    label.style.alignItems = 'center';
+    label.style.justifyContent = 'center';
+    label.style.color = '#ffffff';
+    label.style.fontSize = '13px';
+    label.style.fontWeight = '700';
+    label.style.fontFamily = 'DM Sans, sans-serif';
+    wrapper.appendChild(label);
+
+    return wrapper;
+  }
 
   function escapeAttr(str) {
     return String(str == null ? '' : str)
@@ -106,7 +147,7 @@
     }
 
     if (userMarker) {
-      userMarker.setMap(null);
+      userMarker.map = null;
       userMarker = null;
     }
 
@@ -137,38 +178,33 @@
           href: card.getAttribute('href') || '#'
         };
 
-        var marker = new google.maps.Marker({
+        var pinEl = buildPinEl(PIN_SVG);
+        var marker = new google.maps.marker.AdvancedMarkerElement({
           position: { lat: lat, lng: lng },
-          icon: pinIcon,
-          title: p.name
+          content: pinEl,
+          title: p.name,
+          gmpClickable: true
         });
 
         bounds.extend({ lat: lat, lng: lng });
         markers.push(marker);
 
         card.addEventListener('mouseenter', function () {
-          marker.setIcon(pinIconActive);
-          marker.setZIndex(google.maps.Marker.MAX_ZINDEX + 1);
+          pinEl.style.transform = 'scale(1.5)';
+          marker.zIndex = 9999;
         });
 
         card.addEventListener('mouseleave', function () {
-          marker.setIcon(pinIcon);
-          marker.setZIndex(null);
+          pinEl.style.transform = '';
+          marker.zIndex = null;
         });
 
-        marker.addListener('click', function () {
+        marker.addListener('gmp-click', function () {
           infoWindow.setContent(buildCardHTML(p));
-          infoWindow.open(map, marker);
+          infoWindow.open({ map: map, anchor: marker });
         });
       }(cards[i]));
     }
-
-    var CLUSTER_SVG = '<svg fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 54 54">' +
-      '<circle cx="27" cy="27" r="23" fill="none" stroke="' + colorMain + '" stroke-width="3" stroke-opacity="0.1" stroke-dasharray="32.17 16" stroke-linecap="butt"/>' +
-      '<circle cx="27" cy="27" r="19" fill="none" stroke="' + colorMain + '" stroke-width="3" stroke-opacity="0.4" stroke-dasharray="27.79 12" stroke-linecap="butt"/>' +
-      '<circle cx="27" cy="27" r="15" fill="none" stroke="' + colorMain + '" stroke-width="3" stroke-opacity="0.6" stroke-dasharray="23.42 8" stroke-linecap="butt"/>' +
-      '<circle cx="27" cy="27" r="12" fill="' + colorMain + '"/>' +
-      '</svg>';
 
     clustererInstance = new markerClusterer.MarkerClusterer({
       map: map,
@@ -176,22 +212,10 @@
       algorithm: new markerClusterer.SuperClusterAlgorithm({ maxZoom: 22 }),
       renderer: {
         render: function (cluster) {
-          return new google.maps.Marker({
+          return new google.maps.marker.AdvancedMarkerElement({
             position: cluster.position,
-            icon: {
-              url: 'data:image/svg+xml,' + encodeURIComponent(CLUSTER_SVG),
-              scaledSize: new google.maps.Size(54, 54),
-              anchor: new google.maps.Point(27, 27),
-              labelOrigin: new google.maps.Point(27, 27)
-            },
-            label: {
-              text: String(cluster.count),
-              color: '#ffffff',
-              fontSize: '13px',
-              fontWeight: '700',
-              fontFamily: 'DM Sans, sans-serif'
-            },
-            zIndex: Number(google.maps.Marker.MAX_ZINDEX) + cluster.count
+            content: buildClusterEl(cluster.count),
+            zIndex: 9999 + cluster.count
           });
         }
       }
@@ -205,12 +229,12 @@
     }
 
     if (searchCenter) {
-      userMarker = new google.maps.Marker({
+      userMarker = new google.maps.marker.AdvancedMarkerElement({
         position: searchCenter,
         map: map,
-        icon: userPinIcon,
+        content: buildUserPinEl(),
         title: 'Your search location',
-        zIndex: Number(google.maps.Marker.MAX_ZINDEX) + 9999
+        zIndex: 99999
       });
     }
   }
@@ -222,34 +246,13 @@
     colorMain = getComputedStyle(document.documentElement).getPropertyValue('--color-main').trim() || '#3044FF';
     colorErrorHover = getComputedStyle(document.documentElement).getPropertyValue('--error-hover').trim() || '#E3361E';
 
-    var USER_PIN_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="34" viewBox="0 0 24 34">' +
-      '<path d="M12 0C5.373 0 0 5.373 0 12c0 8.837 12 22 12 22S24 20.837 24 12C24 5.373 18.627 0 12 0z" fill="' + colorErrorHover + '"/>' +
-      '<circle cx="12" cy="12" r="4" fill="white"/></svg>';
-
-    userPinIcon = {
-      url: 'data:image/svg+xml,' + encodeURIComponent(USER_PIN_SVG),
-      scaledSize: new google.maps.Size(28, 40),
-      anchor: new google.maps.Point(14, 40)
-    };
-
-    pinIcon = {
-      url: 'data:image/svg+xml,' + encodeURIComponent(PIN_SVG),
-      scaledSize: new google.maps.Size(24, 34),
-      anchor: new google.maps.Point(12, 34)
-    };
-    pinIconActive = {
-      url: 'data:image/svg+xml,' + encodeURIComponent(PIN_SVG),
-      scaledSize: new google.maps.Size(36, 51),
-      anchor: new google.maps.Point(18, 51)
-    };
-
     map = new google.maps.Map(mapEl, {
       center: { lat: -33.855, lng: 151.150 },
       zoom: 11,
       mapTypeControl: false,
       streetViewControl: false,
       fullscreenControl: false,
-      styles: MAP_STYLES
+      mapId: LOCATOR_MAP_ID
     });
     window.locatorMapInstance = map;
 
@@ -281,14 +284,30 @@
   var currentLocation = '';
   var currentDistance = '15';
   var lastParams = null;
-  var searchLatLng = null;
   var selectedCategories = {};
   var lastStatusArgs = [0, '', ''];
   var searchTotal = 0;
 
+  // Lat/lng are populated by AddressLookup (shared portal script) into hidden inputs when the user picks a suggestion.
+  var latEl = document.getElementById('locator_latitude');
+  var lngEl = document.getElementById('locator_longitude');
+
+  function getSearchLatLng() {
+    if (!latEl || !lngEl) { return null; }
+    var lat = parseFloat(latEl.value);
+    var lng = parseFloat(lngEl.value);
+    if (isNaN(lat) || isNaN(lng)) { return null; }
+    return { lat: lat, lng: lng };
+  }
+
+  function clearSearchLatLng() {
+    if (latEl) { latEl.value = ''; }
+    if (lngEl) { lngEl.value = ''; }
+  }
+
   function clearAllFilters() {
     currentLocation = '';
-    searchLatLng = null;
+    clearSearchLatLng();
     locationEl.setAttribute('value', '');
     syncDistanceState();
     fetchResults({ location: '', lat: '', lng: '', distance: '' }, true);
@@ -437,13 +456,13 @@
 
   locationEl.addEventListener('insInput', function (e) {
     currentLocation = (e.detail && e.detail.value) || '';
-    searchLatLng = null;
+    clearSearchLatLng();
     syncDistanceState();
   });
 
   locationEl.addEventListener('insValueChange', function (e) {
     currentLocation = (e.detail && e.detail.value) || '';
-    searchLatLng = null;
+    clearSearchLatLng();
     syncDistanceState();
   });
 
@@ -510,9 +529,10 @@
       return;
     }
 
-    if (searchLatLng) {
+    var latLng = getSearchLatLng();
+    if (latLng) {
       var displayLocation = buildDisplayLocation(currentLocation, null);
-      fetchResults({ location: currentLocation, lat: searchLatLng.lat, lng: searchLatLng.lng, distance: distance, displayLocation: displayLocation }, pushState);
+      fetchResults({ location: currentLocation, lat: latLng.lat, lng: latLng.lng, distance: distance, displayLocation: displayLocation }, pushState);
       return;
     }
 
@@ -601,7 +621,7 @@
     if (e.target && e.target.classList.contains('locator-clear-btn')) {
       e.preventDefault();
       currentLocation = '';
-      searchLatLng = null;
+      clearSearchLatLng();
       locationEl.setAttribute('value', '');
       if (distanceEl) { try { distanceEl.setValue(''); } catch (ex) {} }
       selectedCategories = {};
@@ -713,19 +733,17 @@
     setupInitialPagination();
   }
 
-  // Initialize Google Places Autocomplete on the location input, with a fallback in case the API is not loaded yet
-  var autocompleteInitInterval = setInterval(function () {
-    if (!window.google || !window.google.maps || !window.google.maps.places) { return; }
+  // AddressLookup sets the inner input's value programmatically on selection (no event fires).
+  // Sync currentLocation on blur so the picked formatted address is what doSearch() uses.
+  var addressSyncInterval = setInterval(function () {
     var innerInput = locationEl.querySelector('input');
     if (!innerInput) { return; }
-    clearInterval(autocompleteInitInterval);
-    var autocomplete = new google.maps.places.Autocomplete(innerInput, { types: ['geocode'] });
-    autocomplete.addListener('place_changed', function () {
-      var place = autocomplete.getPlace();
-      if (place && place.geometry && place.geometry.location) {
-        searchLatLng = { lat: place.geometry.location.lat(), lng: place.geometry.location.lng() };
-        currentLocation = innerInput.value || place.name || place.formatted_address || currentLocation;
-        locationEl.setAttribute('value', currentLocation);
+    clearInterval(addressSyncInterval);
+    innerInput.addEventListener('blur', function () {
+      var v = innerInput.value || '';
+      if (v && v !== currentLocation) {
+        currentLocation = v;
+        locationEl.setAttribute('value', v);
         syncDistanceState();
       }
     });

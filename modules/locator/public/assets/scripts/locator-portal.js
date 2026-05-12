@@ -47,7 +47,6 @@
 
     uploadImage: function (base64, filename, property, hiddenInputId, pickerEl) {
       var hiddenInput = document.getElementById(hiddenInputId);
-      console.log('test: Requesting S3 upload presign for property:', property);
       axios.get('/api/locator/upload-presign', {
         params: {
           table: 'modules/insites_locator/location',
@@ -66,7 +65,6 @@
         var blob = LocatorPortal.base64ToBlob(base64);
         formData.append('file', blob, filename);
 
-        console.log('test: Uploading to S3 with form data:', formData);
         return axios.post(uploadData.direct_upload_url, formData);
       }).then(function (response) {
         var parser = new DOMParser();

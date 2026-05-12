@@ -77,4 +77,11 @@ metadata: {
 {% function google_maps_key = "crm/controller/google_maps/get" %}
 {% assign google_maps_key = google_maps_key.key %}
 <script src="https://unpkg.com/@googlemaps/markerclusterer/dist/index.umd.js"></script>
-<script async src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_key }}&libraries=places&callback=initLocatorMap&loading=async"></script>
+<script async src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_key }}&libraries=places,marker&v=weekly&callback=initLocatorMap&loading=async"></script>
+
+{% comment %} Address autocomplete (Places New API) — populates #locator_latitude / #locator_longitude on selection. {% endcomment %}
+{%- if context.environment == "staging" -%}
+  <script src="{{ 'modules/portal/scripts/address-lookup.js' | asset_url }}"></script>
+{%- else -%}
+  <script src="{{ 'modules/portal/scripts/address-lookup.min.js' | asset_url }}"></script>
+{%- endif -%}
