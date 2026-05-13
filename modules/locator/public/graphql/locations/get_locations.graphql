@@ -1,6 +1,6 @@
 query get_locations(
   $page: Int = 1,
-  $size: Int = 100,
+  $size: Int = 30,
   $location: String = ""
 ) {
   items: records(

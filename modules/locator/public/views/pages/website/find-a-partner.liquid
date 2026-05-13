@@ -23,7 +23,7 @@ dynamic_cache:
         ]
         {%- endparse_json -%}
         {%- include "modules/website/cache/generate_cache_key", models: models -%}
-        {{ context.current_user.id }} {{ 'now' | date: "%Y-%m-%d-%s" }}
+        {{ context.current_user.id }}
 ---
 
 {% if context.params.slug2 %}

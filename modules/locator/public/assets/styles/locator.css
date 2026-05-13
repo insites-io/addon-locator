@@ -135,6 +135,7 @@ p {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
+  min-height: 60px;
 }
 
 .locator-search-bar__left {
@@ -331,6 +332,8 @@ ins-input-select input {
   flex-direction: column;
   gap: 16px;
   padding: 16px;
+  /* Leaves a 24px gap above when JS triggers scrollIntoView on page-button click */
+  scroll-margin-top: 24px;
 }
 
 /* ─── Grid view ──────────────────────────────────────────────────────────── */

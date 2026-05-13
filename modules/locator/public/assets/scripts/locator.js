@@ -614,16 +614,51 @@
       });
   }
 
-  var filtersBtn   = document.getElementById('locator-filters-btn');
-  var filtersDrawer = document.getElementById('locator-filters-drawer');
+  var filtersBtn = document.getElementById('locator-filters-btn');
+  var filtersDrawer = null;
 
-  if (filtersBtn && filtersDrawer) {
+  // Drawer markup mirrors partials/website/find_a_partner/filters_drawer.liquid.
+  // Kept inline so we can defer the <ins-drawer> custom-element upgrade until
+  // the user actually opens the filters panel.
+  function ensureFiltersDrawer() {
+    if (filtersDrawer) { return filtersDrawer; }
+    var html =
+      '<ins-drawer id="locator-filters-drawer" label="Filters" position="right" custom-width="400px" backdrop-can-close>' +
+        '<div class="locator-filter-group" id="locator-filter-categories" role="group" aria-labelledby="locator-filter-categories-label" style="display:none">' +
+          '<p class="locator-filter-group__label" id="locator-filter-categories-label">Partner tier</p>' +
+          '<div id="locator-filter-category-list"></div>' +
+        '</div>' +
+      '</ins-drawer>';
+    document.body.insertAdjacentHTML('beforeend', html);
+    filtersDrawer = document.getElementById('locator-filters-drawer');
+    var listEl = document.getElementById('locator-filter-category-list');
+    if (listEl) {
+      listEl.addEventListener('insCheck', function (e) {
+        var slug    = e.detail && e.detail.value;
+        var checked = e.detail && e.detail.checked;
+        if (!slug) { return; }
+        if (checked) {
+          selectedCategories[slug] = true;
+        } else {
+          delete selectedCategories[slug];
+        }
+        filterByCategories();
+      });
+    }
+    return filtersDrawer;
+  }
+
+  if (filtersBtn) {
     filtersBtn.addEventListener('insClick', function () {
+      var drawer = ensureFiltersDrawer();
       if (!filtersInitialized) {
         updateFilterCategories();
         filtersInitialized = true;
       }
-      filtersDrawer.setDrawerState(true);
+      // ins-drawer upgrades synchronously on insertAdjacentHTML, but defer the
+      // setDrawerState call by a tick so Stencil has finished its initial
+      // render before we ask it to open.
+      setTimeout(function () { drawer.setDrawerState(true); }, 0);
     });
   }
 
@@ -639,21 +674,6 @@
       fetchResults({ location: '', lat: '', lng: '', distance: '' }, true);
     }
   });
-
-  var filterCategoryList = document.getElementById('locator-filter-category-list');
-  if (filterCategoryList) {
-    filterCategoryList.addEventListener('insCheck', function (e) {
-      var slug    = e.detail && e.detail.value;
-      var checked = e.detail && e.detail.checked;
-      if (!slug) { return; }
-      if (checked) {
-        selectedCategories[slug] = true;
-      } else {
-        delete selectedCategories[slug];
-      }
-      filterByCategories();
-    });
-  }
 
   if (window.matchMedia('(max-width: 639px)').matches) {
     document.body.classList.add('locator-mobile-map-open');
