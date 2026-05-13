@@ -1,0 +1,28 @@
+{% comment %} Locator Addon {% endcomment %}
+{% graphql create_constant, name: 'locator_addon', value: 'true' %}
+  mutation constant_set(
+  $name: String
+  $value: String
+) {
+  constant_set(name: $name, value: $value) {
+    value
+    name
+  }
+}
+{% endgraphql %}
+{% log create_constant, type: "Constants Created: locator_addon" %}
+
+
+{% comment %} Google Map ID {% endcomment %}
+{% graphql create_constant, name: 'google_map_id', value: 'd55c604835e6ff00d4f4a0c0' %}
+  mutation constant_set(
+  $name: String
+  $value: String
+) {
+  constant_set(name: $name, value: $value) {
+    value
+    name
+  }
+}
+{% endgraphql %}
+{% log create_constant, type: "Constants Created: google_map_id" %}
