@@ -18,16 +18,11 @@ metadata: {
 {%- assign page_q     = context.params.page     | strip | plus: 0 -%}
 {%- if page_q == 0 -%}{%- assign page_q = 1 -%}{%- endif -%}
 
-{% log lat_q, type: "==test lat_q" %}
-{% log lng_q, type: "==test lng_q" %}
-{% log distance_q, type: "==test distance_q" %}
 
 {%- if lat_q != blank and lng_q != blank and distance_q != blank -%}
   {%- assign point_json = '{"type":"Point","coordinates":[' | append: lng_q | append: ',' | append: lat_q | append: ']}' -%}
   {%- assign point = point_json | parse_json -%}
-  {%- assign distance_int = distance_q | plus: 0 -%}
-  {% log point, type: "==test point" %}
-  {% log distance_int, type: "==test distance_int" %}
+  {%- assign distance_int = distance_q | plus: 0 -%}  
   {%- graphql data = "modules/locator/locations/get_locations_nearby", point: point, distance: distance_int, page: page_q -%}
 {%- elsif location_q != blank -%}
   {%- graphql data = "modules/locator/locations/get_locations", location: location_q -%}
