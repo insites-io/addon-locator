@@ -38,10 +38,10 @@ metadata: {
   {%- comment -%} Strip HTML from short description for inline use {%- endcomment -%}
   {%- assign tagline = partner.short_description | strip_html | strip -%}
 
-  {%- comment -%} Banner {%- endcomment -%}
+  {%- comment -%} Banner — LCP candidate, prioritise fetch and provide dimensions to reserve space. {%- endcomment -%}
   <div class="locator-profile-banner">
     {%- if partner.image_1.url -%}
-      <img src="{{ partner.image_1.url | replace: ' ', '%20' }}" alt="" class="locator-profile-banner__img" aria-hidden="true">
+      <img src="{{ partner.image_1.url | replace: ' ', '%20' }}" alt="" class="locator-profile-banner__img" aria-hidden="true" width="1920" height="600" fetchpriority="high" decoding="async">
     {%- endif -%}
     <div class="locator-profile-banner__overlay" aria-hidden="true"></div>
   </div>
@@ -54,7 +54,7 @@ metadata: {
         <div class="locator-profile-logo-col">
           <div class="locator-profile-logo">
             {%- if partner.location_image.url -%}
-              <img src="{{ partner.location_image.url | replace: ' ', '%20' }}" alt="{{ partner.location_name | escape }}">
+              <img src="{{ partner.location_image.url | replace: ' ', '%20' }}" alt="{{ partner.location_name | escape }}" width="97" height="97" decoding="async">
             {%- else -%}
               {%- include 'modules/website/layout/placeholder_image' -%}
             {%- endif -%}
@@ -108,7 +108,9 @@ metadata: {
 
         <div class="locator-profile-main">
           {%- if partner.long_description and partner.long_description != '' -%}
-            <div class="locator-profile-section__body">{{ partner.long_description }}</div>
+            {%- comment -%} Add lazy-loading hints to any <img> in the rich-text body — these sit below the fold. {%- endcomment -%}
+            {%- assign long_description_lazy = partner.long_description | replace: '<img ', '<img loading="lazy" decoding="async" ' -%}
+            <div class="locator-profile-section__body">{{ long_description_lazy }}</div>
           {%- endif -%}
         </div>
 
