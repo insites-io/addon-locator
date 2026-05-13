@@ -46,7 +46,8 @@
   'use strict';
 
   // Styling is controlled by the map style associated with LOCATOR_MAP_ID in Google Cloud Console.
-  var LOCATOR_MAP_ID = 'DEMO_MAP_ID';
+  // Value comes from the `google_map_id` PlatformOS constant, injected via results.liquid.
+  var LOCATOR_MAP_ID = window.locatorMapId || 'DEMO_MAP_ID';
 
   var PIN_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="34" viewBox="0 0 24 34">' +
     '<path d="M12 0C5.373 0 0 5.373 0 12c0 8.837 12 22 12 22S24 20.837 24 12C24 5.373 18.627 0 12 0z" fill="#05051D"/>' +
@@ -262,8 +263,10 @@
   };
 
   window.updateLocatorMap = function (center) {
-    if (!map) { return; }
+    // Save center even if map isn't ready yet — on desktop the Maps script is
+    // lazy-loaded, so initLocatorMap may run after a search has already fired.
     if (center) { searchCenter = center; }
+    if (!map) { return; }
     setupMarkers();
   };
 
@@ -287,6 +290,9 @@
   var selectedCategories = {};
   var lastStatusArgs = [0, '', ''];
   var searchTotal = 0;
+  // Filter checkbox list is built lazily on first drawer open — keeps N
+  // <ins-checkbox> custom-element upgrades off the initial paint path.
+  var filtersInitialized = false;
 
   // Lat/lng are populated by AddressLookup (shared portal script) into hidden inputs when the user picks a suggestion.
   var latEl = document.getElementById('locator_latitude');
@@ -597,7 +603,7 @@
         searchTotal = data.total || 0;
         updateStatus(searchTotal, params.displayLocation || params.location, params.distance);
         selectedCategories = {};
-        updateFilterCategories();
+        if (filtersInitialized) { updateFilterCategories(); }
         updateFilterGroupLabel();
 
         var center = (params.lat && params.lng) ? { lat: parseFloat(params.lat), lng: parseFloat(params.lng) } : null;
@@ -613,6 +619,10 @@
 
   if (filtersBtn && filtersDrawer) {
     filtersBtn.addEventListener('insClick', function () {
+      if (!filtersInitialized) {
+        updateFilterCategories();
+        filtersInitialized = true;
+      }
       filtersDrawer.setDrawerState(true);
     });
   }
@@ -692,7 +702,7 @@
     }
   }
 
-  function ssrShowPage(page) {
+  function ssrShowPage(page, skipScroll) {
     ssrPage = page;
     var start = (page - 1) * SSR_PAGE_SIZE;
     var end = start + SSR_PAGE_SIZE;
@@ -704,17 +714,17 @@
       }
     }
     renderSsrPagination();
-    locatorList.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (!skipScroll) {
+      locatorList.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   }
 
   function setupInitialPagination() {
     var all = locatorList.querySelectorAll('.locator-card');
     ssrCards = Array.prototype.slice.call(all);
     if (ssrCards.length <= SSR_PAGE_SIZE) { return; }
-    ssrShowPage(1);
+    ssrShowPage(1, true);
   }
-
-  updateFilterCategories();
 
   var initialSearch = getUrlParam('search');
   var initialDistance = getUrlParam('distance');
@@ -729,6 +739,25 @@
     var initialDistanceDisplay = initialDistance || currentDistance;
     updateStatus(searchTotal, initialDisplay, initialDistanceDisplay);
     history.replaceState({ search: initialSearch, distance: initialDistanceDisplay }, '', window.location.href);
+    // The SSR query is a text-contains match on city/postcode/address_1 and
+    // returns a different set than the geocoded radius search the button-click
+    // flow uses. Trigger doSearch() so the URL-loaded results match the
+    // interactive search results. Needs Maps for the geocoder — kick the lazy
+    // loader and poll until google.maps is ready.
+    if (window.locatorLoadMaps) { window.locatorLoadMaps(); }
+    var mapsReadyAttempts = 0;
+    var mapsReadyInterval = setInterval(function () {
+      mapsReadyAttempts++;
+      if (window.google && window.google.maps) {
+        clearInterval(mapsReadyInterval);
+        doSearch(false);
+      } else if (mapsReadyAttempts > 100) {
+        // Maps failed to load after ~10s — fall back to a non-geocoded fetch
+        // so the user still gets fresh results (even if they match the SSR set).
+        clearInterval(mapsReadyInterval);
+        doSearch(false);
+      }
+    }, 100);
   } else {
     setupInitialPagination();
   }

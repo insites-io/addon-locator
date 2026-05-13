@@ -67,21 +67,84 @@ metadata: {
   ></ins-button>
 </div>
 
+{% comment %} Preconnect to Maps origins so the deferred fetch is faster when it kicks off {% endcomment %}
+<link rel="preconnect" href="https://maps.googleapis.com" crossorigin>
+<link rel="preconnect" href="https://maps.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://unpkg.com" crossorigin>
+<link rel="dns-prefetch" href="https://maps.googleapis.com">
+<link rel="dns-prefetch" href="https://maps.gstatic.com">
+<link rel="dns-prefetch" href="https://unpkg.com">
+
 {% comment %} Geocoder fallback country: appended to bare postcodes when user searches without selecting from autocomplete {% endcomment %}
 {%- include "modules/insites_cms/globals" -%}
 {%- assign loc_country = context.exports.global.loc_1_country | default: 'Australia' -%}
 {%- if loc_country == blank -%}{%- assign loc_country = 'Australia' -%}{%- endif -%}
-<script>window.locatorCountry = {{ loc_country | json }};</script>
+<script>
+  window.locatorCountry = {{ loc_country | json }};
+  window.locatorMapId = {{ context.constants.google_map_id | json }};
+</script>
 
 {% comment %} Google Maps Key {% endcomment %}
 {% function google_maps_key = "crm/controller/google_maps/get" %}
 {% assign google_maps_key = google_maps_key.key %}
-<script src="https://unpkg.com/@googlemaps/markerclusterer/dist/index.umd.js"></script>
-<script async src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_key }}&libraries=places,marker&v=weekly&callback=initLocatorMap&loading=async"></script>
 
-{% comment %} Address autocomplete (Places New API) — populates #locator_latitude / #locator_longitude on selection. {% endcomment %}
+{% comment %}
+  Lazy-load Google Maps + markerclusterer.
+  Mobile (≤639px): map is the primary view on initial paint — load immediately.
+  Desktop: list is primary; defer until first user interaction or idle to cut TBT/FCP.
+{% endcomment %}
+<script>
+(function () {
+  var CLUSTERER_URL = 'https://unpkg.com/@googlemaps/markerclusterer/dist/index.umd.js';
+  var MAPS_URL = 'https://maps.googleapis.com/maps/api/js?key={{ google_maps_key }}&libraries=places,marker&v=weekly&callback=initLocatorMap&loading=async';
+  var loaded = false;
+  var events = ['scroll', 'click', 'touchstart', 'keydown', 'mousemove'];
+
+  function loadMaps() {
+    if (loaded) { return; }
+    loaded = true;
+    cleanup();
+    var c = document.createElement('script');
+    c.src = CLUSTERER_URL;
+    c.async = true;
+    c.onload = function () {
+      var m = document.createElement('script');
+      m.src = MAPS_URL;
+      m.async = true;
+      document.head.appendChild(m);
+    };
+    document.head.appendChild(c);
+  }
+
+  // Allow locator.js to trigger Maps load early — e.g. on initial-load search
+  // where we need the geocoder to run before the deferred trigger would fire.
+  window.locatorLoadMaps = loadMaps;
+
+  function cleanup() {
+    for (var i = 0; i < events.length; i++) {
+      window.removeEventListener(events[i], loadMaps);
+    }
+  }
+
+  if (window.matchMedia('(max-width: 639px)').matches) {
+    loadMaps();
+    return;
+  }
+
+  for (var i = 0; i < events.length; i++) {
+    window.addEventListener(events[i], loadMaps, { passive: true });
+  }
+  if (window.requestIdleCallback) {
+    requestIdleCallback(loadMaps, { timeout: 5000 });
+  } else {
+    setTimeout(loadMaps, 3000);
+  }
+}());
+</script>
+
+{% comment %} Address autocomplete (Places New API) — populates #locator_latitude / #locator_longitude on selection. Polls for google.maps.places internally, so safe to load before Maps. {% endcomment %}
 {%- if context.environment == "staging" -%}
-  <script src="{{ 'modules/portal/scripts/address-lookup.js' | asset_url }}"></script>
+  <script defer src="{{ 'modules/portal/scripts/address-lookup.js' | asset_url }}"></script>
 {%- else -%}
-  <script src="{{ 'modules/portal/scripts/address-lookup.min.js' | asset_url }}"></script>
+  <script defer src="{{ 'modules/portal/scripts/address-lookup.min.js' | asset_url }}"></script>
 {%- endif -%}

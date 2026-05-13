@@ -44,7 +44,7 @@ metadata: {
    {% if location.category %}data-tag="{{ location.category.slug }}" data-tag-label="{{ location.category.name | escape }}"{% endif %}>
   <div class="locator-card__logo">
     {% if location.location_image.url %}
-      <img src="{{ location.location_image.url | replace: ' ', '%20' }}" alt="{{ location.location_name | escape }}">
+      <img src="{{ location.location_image.url | replace: ' ', '%20' }}" alt="{{ location.location_name | escape }}" width="96" height="96" loading="lazy" decoding="async">
     {% else %}
       {%- include 'modules/website/layout/placeholder_image' -%}
     {% endif %}
