@@ -444,6 +444,10 @@ ins-input-select input {
 
 /* ─── Card ───────────────────────────────────────────────────────────────── */
 
+.locator-list .locator-card:hover {
+  background: var(--color-ui-02);
+}
+
 .locator-card {
   position: relative;
   display: flex;
