@@ -419,10 +419,13 @@ ins-input-select input {
   padding: 0;
 }
 
-.locator-list.is-grid .locator-card .locator-tag {
-  position: absolute;
-  top: 16px;
-  right: 16px;
+/* Stack the header content (name on top, tag underneath) in grid view. The
+   header is normally a horizontal flex row with the tag right-aligned next
+   to the name; in grid we want the tag flowing below. */
+.locator-list.is-grid .locator-card__header {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
 }
 
 .locator-list.is-grid .locator-card__logo {
@@ -765,15 +768,12 @@ ins-tag.locator-tag--implementation .ins-tag {
     margin-left: 16px;
   }
 
+  /* Stack name on top, tag underneath — mirrors the list card's is-grid layout. */
   .locator-map-card__header {
     padding-right: 0;
-  }
-
-  /* Right offset clears Google's close X (right: 6, size 28×28). */
-  .locator-map-card .locator-tag {
-    position: absolute;
-    top: 16px;
-    right: 50px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
   }
 
   .locator-map-card__body {
