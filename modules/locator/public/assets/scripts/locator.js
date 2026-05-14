@@ -56,6 +56,7 @@
   var map, infoWindow, colorMain, colorErrorHover;
   var clustererInstance = null;
   var searchCenter = null;
+  var searchDistance = null;
   var userMarker = null;
 
   function buildPinEl(svg) {
@@ -222,7 +223,20 @@
       }
     });
 
-    if (!bounds.isEmpty()) {
+    if (searchCenter && searchDistance) {
+      // After a search: zoom the map to match the selected radius, regardless
+      // of how the result pins are distributed. lng delta widens at higher
+      // latitudes because 1° lng shrinks as cos(lat).
+      var latDelta = searchDistance / 111;
+      var lngDelta = searchDistance / (111 * Math.cos(searchCenter.lat * Math.PI / 180));
+      var radiusBounds = new google.maps.LatLngBounds(
+        { lat: searchCenter.lat - latDelta, lng: searchCenter.lng - lngDelta },
+        { lat: searchCenter.lat + latDelta, lng: searchCenter.lng + lngDelta }
+      );
+      map.fitBounds(radiusBounds);
+    } else if (!bounds.isEmpty()) {
+      // No active search — fit to whatever pins are on the map (SSR seed set
+      // on initial load, or the full directory after the X clears a search).
       map.fitBounds(bounds);
     } else if (searchCenter) {
       map.setCenter(searchCenter);
@@ -262,10 +276,14 @@
     setupMarkers();
   };
 
-  window.updateLocatorMap = function (center) {
-    // Save center even if map isn't ready yet — on desktop the Maps script is
-    // lazy-loaded, so initLocatorMap may run after a search has already fired.
-    if (center) { searchCenter = center; }
+  window.updateLocatorMap = function (center, distance) {
+    // Called with no args → preserve current search context, just re-render
+    // markers (used by client-side category filter and mobile see-map resize).
+    // Called with args → set/clear the context. Stored even if the map isn't
+    // ready yet, since on desktop the Maps script is lazy-loaded and
+    // initLocatorMap may run after a search has already fired.
+    if (arguments.length >= 1) { searchCenter = center || null; }
+    if (arguments.length >= 2) { searchDistance = distance ? parseFloat(distance) : null; }
     if (!map) { return; }
     setupMarkers();
   };
@@ -344,7 +362,7 @@
       cards[i].style.display = visible ? '' : 'none';
       if (visible) { visibleCount++; }
     }
-    if (window.updateLocatorMap) { window.updateLocatorMap(null); }
+    if (window.updateLocatorMap) { window.updateLocatorMap(); }
     if (!statusEl) { return; }
     if (hasFilter && visibleCount === 0) {
       statusEl.innerHTML = 'No partners match your filters. <button id="locator-clear-filters" type="button">Clear filters</button>';
@@ -473,7 +491,7 @@
   });
 
   // X (clear) button for the location search input. 
-  // pattern — injects an .icon-close-1 element when there's a value, removes
+  // Injects an .icon-close-1 element when there's a value, removes
   // it when empty. ins-input renders its child DOM asynchronously, so we use
   // a MutationObserver to wait for .input-wrap before wiring up.
   function initLocationClear() {
@@ -663,7 +681,7 @@
         updateFilterGroupLabel();
 
         var center = (params.lat && params.lng) ? { lat: parseFloat(params.lat), lng: parseFloat(params.lng) } : null;
-        if (window.updateLocatorMap) { window.updateLocatorMap(center); }
+        if (window.updateLocatorMap) { window.updateLocatorMap(center, params.distance || ''); }
       })
       .catch(function () {
         locatorList.innerHTML = '<div class="locator-empty"><p>Something went wrong. Please try again.</p></div>';
@@ -744,7 +762,7 @@
       setTimeout(function () {
         if (window.google && window.google.maps && window.locatorMapInstance) {
           google.maps.event.trigger(window.locatorMapInstance, 'resize');
-          if (window.updateLocatorMap) { window.updateLocatorMap(null); }
+          if (window.updateLocatorMap) { window.updateLocatorMap(); }
         }
       }, 50);
     });
