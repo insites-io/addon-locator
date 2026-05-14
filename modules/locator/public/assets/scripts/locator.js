@@ -727,9 +727,15 @@
     if (filtersDrawer) { return filtersDrawer; }
     var html =
       '<ins-drawer id="locator-filters-drawer" label="Filters" position="right" custom-width="400px" backdrop-can-close>' +
-        '<div class="locator-filter-group" id="locator-filter-categories" role="group" aria-labelledby="locator-filter-categories-label" style="display:none">' +
-          '<p class="locator-filter-group__label" id="locator-filter-categories-label">Partner tier</p>' +
-          '<div id="locator-filter-category-list"></div>' +
+        '<div class="locator-filter-body">' +
+          '<div class="locator-filter-group" id="locator-filter-categories" role="group" aria-labelledby="locator-filter-categories-label" style="display:none">' +
+            '<p class="locator-filter-group__label" id="locator-filter-categories-label">Partner tier</p>' +
+            '<div id="locator-filter-category-list"></div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="locator-filter-footer">' +
+          '<ins-button id="locator-filters-clear-btn" label="Clear all" icon="icon-trash" outlined color="primary"></ins-button>' +
+          '<ins-button id="locator-filters-apply-btn" label="Apply Filters" icon="icon-check-2" solid color="primary"></ins-button>' +
         '</div>' +
       '</ins-drawer>';
     document.body.insertAdjacentHTML('beforeend', html);
@@ -746,6 +752,23 @@
           delete selectedCategories[slug];
         }
         filterByCategories();
+      });
+    }
+    var clearBtn = document.getElementById('locator-filters-clear-btn');
+    if (clearBtn) {
+      clearBtn.addEventListener('insClick', function () {
+        var boxes = listEl ? listEl.querySelectorAll('ins-checkbox') : [];
+        for (var i = 0; i < boxes.length; i++) {
+          try { boxes[i].updateCheckState(false); } catch (ex) {}
+        }
+        selectedCategories = {};
+        filterByCategories();
+      });
+    }
+    var applyBtn = document.getElementById('locator-filters-apply-btn');
+    if (applyBtn) {
+      applyBtn.addEventListener('insClick', function () {
+        filtersDrawer.setDrawerState(false);
       });
     }
     return filtersDrawer;

@@ -845,6 +845,38 @@ ins-tag.locator-tag--implementation .ins-tag {
   font-weight: 400;
 }
 
+/* Footer pinned to the drawer bottom regardless of content height. ins-drawer
+   reserves 95px of padding-bottom on .ins-content for built-in footer space;
+   we zero it so the sticky footer sits flush against the drawer bottom. */
+#locator-filters-drawer .ins-content {
+  padding-bottom: 0;
+}
+
+#locator-filters-drawer .ins-drawer-body {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100dvh - 80px);
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+#locator-filters-drawer .locator-filter-body {
+  flex: 1 0 auto;
+}
+
+#locator-filters-drawer .locator-filter-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 16px -16px -16px;
+  padding: 16px;
+  border-top: 1px solid var(--color-ui-04);
+  background: var(--color-ui-01);
+  position: sticky;
+  bottom: 0;
+}
+
 /* ─── Page-hidden cards (pagination, still visible as map pins) ──────────── */
 
 .is-page-hidden {
