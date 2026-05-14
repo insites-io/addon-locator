@@ -122,9 +122,14 @@
   }
 
   function buildCardHTML(p) {
+    // Use placeholder image when no logo is set.
+    var logoMarkup = p.logo
+      ? '<img src="' + p.logo + '" alt="' + p.name + '">'
+      : '<div class="placeholder-img vertical-align-middle"><div><i class="icon-panorame"></i></div></div>';
+
     return '<div class="locator-map-card">' +
       '<div class="locator-map-card__logo">' +
-        (p.logo ? '<img src="' + p.logo + '" alt="' + p.name + '">' : '') +
+        logoMarkup +
       '</div>' +
       '<div class="locator-map-card__body">' +
         '<div class="locator-map-card__header">' +

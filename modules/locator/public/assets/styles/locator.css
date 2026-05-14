@@ -441,7 +441,8 @@ ins-input-select input {
   object-fit: cover;
 }
 
-.locator-card__logo .placeholder-img {
+.locator-card__logo .placeholder-img,
+.locator-map-card__logo .placeholder-img {
   width: 100%;
   font-size: 28px;
 }
