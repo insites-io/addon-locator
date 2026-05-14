@@ -566,13 +566,13 @@ ins-tag.locator-tag .ins-tag > span {
 }
 
 ins-tag.locator-tag--referral .ins-tag {
-  background-color: rgba(67, 108, 242, 0.1);
-  color: var(--info);
+  background-color: rgba(67, 108, 242, 0.1) !important;
+  color: var(--info) !important;
 }
 
 ins-tag.locator-tag--implementation .ins-tag {
-  background-color: rgba(12, 172, 82, 0.1);
-  color: var(--success);
+  background-color: rgba(12, 172, 82, 0.1) !important;
+  color: var(--success) !important;
 }
 
 /* ─── Map InfoWindow overrides ───────────────────────────────────────────── */
