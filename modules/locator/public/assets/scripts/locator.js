@@ -472,6 +472,62 @@
     syncDistanceState();
   });
 
+  // X (clear) button for the location search input. 
+  // pattern — injects an .icon-close-1 element when there's a value, removes
+  // it when empty. ins-input renders its child DOM asynchronously, so we use
+  // a MutationObserver to wait for .input-wrap before wiring up.
+  function initLocationClear() {
+    var innerInput = locationEl.getElementsByTagName('input')[0];
+    var inputWrap  = locationEl.querySelector('.input-wrap');
+    var iconEl     = locationEl.querySelector('.icon-search-1') || locationEl.querySelector('.icon-search');
+
+    if (!innerInput || !inputWrap || !iconEl) { return false; }
+
+    var closeIcon = null;
+
+    function showClose() {
+      if (closeIcon) { return; }
+      closeIcon = document.createElement('i');
+      closeIcon.classList.add('icon-close-1', 'icon-wrap', 'icon-close-active', 'icon-close-style');
+      inputWrap.insertBefore(closeIcon, iconEl);
+    }
+
+    function hideClose() {
+      if (!closeIcon) { return; }
+      closeIcon.remove();
+      closeIcon = null;
+    }
+
+    // Show X on load if URL had ?search= (input is pre-filled).
+    if (innerInput.value.trim()) { showClose(); }
+
+    innerInput.addEventListener('input', function () {
+      if (innerInput.value.trim()) { showClose(); } else { hideClose(); }
+    });
+
+    // AddressLookup writes to the inner input programmatically (no 'input' event fires).
+    // Sync on blur so the X appears after picking a suggestion.
+    innerInput.addEventListener('blur', function () {
+      if (innerInput.value.trim()) { showClose(); } else { hideClose(); }
+    });
+
+    locationEl.addEventListener('click', function (e) {
+      if (!e.target.classList.contains('icon-close-1')) { return; }
+      innerInput.value = '';
+      hideClose();
+      clearAllFilters();
+    });
+
+    return true;
+  }
+
+  if (!initLocationClear()) {
+    var clearObserver = new MutationObserver(function () {
+      if (initLocationClear()) { clearObserver.disconnect(); }
+    });
+    clearObserver.observe(locationEl, { childList: true, subtree: true });
+  }
+
   if (distanceEl) {
     distanceEl.addEventListener('insChange', function (e) {
       currentDistance = e.detail || '15';

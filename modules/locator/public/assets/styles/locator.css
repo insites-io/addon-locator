@@ -173,6 +173,27 @@ ins-input-select input {
   }
 }
 
+/* Locator search — X (clear) button injected by locator.js when the input has
+   a value. Scoped to #locator-location. */
+#locator-location .ins-input-wrap .input-wrap .icon-close-1 {
+  background: var(--color-ui-01);
+  border: none;
+  position: absolute;
+  display: flex;
+  align-items: center;
+  font-size: 16px;
+  right: 32px;
+  top: 12px;
+  color: var(--font-color-body);
+  border-right: 1px solid var(--color-ui-04);
+  padding-right: 8px;
+  transition: color .25s ease-in-out;
+  cursor: pointer;
+}
+#locator-location .ins-input-wrap .input-wrap .icon-close-1:hover {
+  color: var(--color-main);
+}
+
 /* ─── Search bar — medium (≤ 1070px) ─────────────────────────────────────── */
 
 @media screen and (max-width: 1070px) {
