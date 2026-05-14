@@ -351,10 +351,31 @@
   }
 
   function updateFilterGroupLabel() {
-    var labelEl = document.querySelector('#locator-filter-categories .locator-filter-group__label');
-    if (!labelEl) { return; }
     var count = Object.keys(selectedCategories).length;
-    labelEl.textContent = count > 0 ? 'Partner tier (' + count + ')' : 'Partner tier';
+    var labelEl = document.querySelector('#locator-filter-categories .locator-filter-group__label');
+    if (labelEl) {
+      labelEl.textContent = count > 0 ? 'Partner tier (' + count + ')' : 'Partner tier';
+    }
+    var badgeEl = document.getElementById('locator-filters-btn-badge');
+    if (badgeEl) {
+      if (count > 0) {
+        badgeEl.textContent = String(count);
+        badgeEl.hidden = false;
+      } else {
+        badgeEl.hidden = true;
+      }
+    }
+    // ins-button reactively re-renders when icon-right changes. We add the
+    // attribute to reserve space the badge overlays, and strip it when there
+    // are no active filters so a stray icon doesn't appear next to "Filters".
+    var btn = document.getElementById('locator-filters-btn');
+    if (btn) {
+      if (count > 0) {
+        btn.setAttribute('icon-right', 'icon-minus-circle');
+      } else {
+        btn.removeAttribute('icon-right');
+      }
+    }
   }
 
   function filterByCategories() {

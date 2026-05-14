@@ -194,9 +194,9 @@ ins-input-select input {
   color: var(--color-main);
 }
 
-/* ─── Search bar — medium (≤ 1070px) ─────────────────────────────────────── */
+/* ─── Search bar — medium (≤ 1090px) ─────────────────────────────────────── */
 
-@media screen and (max-width: 1070px) {
+@media screen and (max-width: 1090px) {
   .locator-search-bar {
     display: grid;
     grid-template-columns: 1fr auto;
@@ -229,7 +229,7 @@ ins-input-select input {
     grid-row: 2;
   }
 
-  #locator-filters-btn {
+  #locator-filters-btn-wrap {
     grid-column: 2;
     grid-row: 2;
   }
@@ -244,15 +244,52 @@ ins-input-select input {
     padding-bottom: 8px;
   }
 
-  #locator-filters-btn {
+  #locator-filters-btn-wrap {
     grid-column: 1 / -1;
     grid-row: 3;
+    display: block;
+    width: 100%;
+  }
+
+  #locator-filters-btn-wrap > ins-button {
+    display: block;
+    width: 100%;
   }
 
   #locator-search-btn button,
   #locator-filters-btn button {
     width: 100%;
   }
+}
+
+/* ─── Filters button — count badge ──────────────────────────────────────── */
+
+#locator-filters-btn-wrap {
+  position: relative;
+  display: inline-block;
+}
+
+.locator-filters-badge {
+  position: absolute;
+  top: 50%;
+  right: 20px;
+  transform: translateY(-50%);
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--color-main);
+  color: var(--color-ui-01);
+  font-family: var(--font-family-01);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 22px;
+  text-align: center;
+  pointer-events: none;
+}
+
+.locator-filters-badge[hidden] {
+  display: none;
 }
 
 /* ─── Controls bar ───────────────────────────────────────────────────────── */

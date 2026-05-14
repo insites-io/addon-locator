@@ -51,14 +51,19 @@ metadata: {
         </div>
 
         <div class="locator-search-bar__right">
-          <ins-button
-            id="locator-filters-btn"
-            label="Filters"
-            icon="icon-filter"
-            outlined
-            color="primary"
-            class="full-width"
-          ></ins-button>
+          {% comment %} Wrap is the positioning context for the count badge overlay. {% endcomment %}
+          {% comment %} icon-right is added/removed by locator.js based on the selected-filters count — see updateFilterGroupLabel. It reserves the space the badge sits in, so it must not be present when count is 0. {% endcomment %}
+          <div id="locator-filters-btn-wrap">
+            <ins-button
+              id="locator-filters-btn"
+              label="Filters"
+              icon="icon-filter"
+              outlined
+              color="primary"
+              class="full-width"
+            ></ins-button>
+            <span class="locator-filters-badge" id="locator-filters-btn-badge" hidden aria-hidden="true">0</span>
+          </div>
         </div>
 
       </div>
