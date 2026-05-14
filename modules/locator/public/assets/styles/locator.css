@@ -443,6 +443,7 @@ ins-input-select input {
 
 .locator-card__logo .placeholder-img {
   width: 100%;
+  font-size: 28px;
 }
 
 .locator-card__body {
