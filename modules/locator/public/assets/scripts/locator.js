@@ -209,6 +209,9 @@
         marker.addListener('gmp-click', function () {
           infoWindow.setContent(buildCardHTML(p));
           infoWindow.open({ map: map, anchor: marker });
+          // Pan to the marker so the popup (anchored to it) sits centred on
+          // the map viewport instead of wherever the marker happened to be.
+          map.panTo(marker.position);
         });
       }(cards[i]));
     }
