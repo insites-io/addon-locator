@@ -1007,8 +1007,8 @@ ins-tag.locator-tag--implementation .ins-tag {
 }
 
 .locator-profile-logo img {
-  width: 97px;
-  height: 97px;
+  width: 140px;
+  height: 140px;
   object-fit: contain;
 }
 
@@ -1158,8 +1158,14 @@ ins-tag.locator-tag--implementation .ins-tag {
   padding-bottom: 24px;
 }
 
+.locator-profile-section__body li ul {
+  padding-top: 16px;
+  padding-bottom: 0;  
+}
+
 .locator-profile-section__body li {
   padding-bottom: 16px;
+  margin-bottom: 0;
 }
 
 .locator-profile-section__body li:last-child {
@@ -1294,8 +1300,8 @@ ins-tag.locator-tag--implementation .ins-tag {
   }
 
   .locator-profile-logo img {
-    width: 62px;
-    height: 62px;
+    /* width: 62px;
+    height: 62px; */
   }
 
   /* Identity flows below the logo with a 16px gap */
@@ -1305,9 +1311,8 @@ ins-tag.locator-tag--implementation .ins-tag {
 
   /* Allow name + tag to wrap on narrow screens */
   .locator-profile-identity__name-row {
-    align-items: flex-start;
     flex-wrap: wrap;
-    gap: 8px;
+    row-gap: 8px;
   }
 
   /* Smaller heading on mobile */
