@@ -19,8 +19,50 @@ authorization_policies:
 ---
 
 {%- graphql user = 'modules/portal/account/get_current_user' | dig: 'current_user' -%}
-{%- graphql location_result = 'modules/locator/locations/get_my_location', user_uuid: user.external_id -%}
-{%- assign location = location_result | dig: 'relation' | dig: 'results' | first | dig: 'location' -%}
+{%- graphql location_result = 'modules/locator/locations/get_my_location', user_uuid: user.external_id | dig: 'relation','results' | first -%}
+{%- assign location = location_result | dig: 'location' -%}
+
+{%- comment -%}
+  Orphan cleanup. The admin can delete a location record from the front-end
+  admin UI without removing the related location_custom_field row(s), which
+  leaves the user with one or more join rows whose location_uuid no longer
+  resolves (location_result.location is null). Sample shape we're handling:
+    { "location_uuid": "a041404a-…", "location": null }
+
+  When detected, wipe ALL the user's location_custom_field rows (there may be
+  more than one, all orphaned), then reset location_result so the bootstrap
+  block below runs and creates a fresh, valid pair.
+{%- endcomment -%}
+{%- if location_result.location_uuid != blank and location_result.location == blank -%}
+  {%- graphql cleanup_result = 'modules/locator/locations/delete_my_location_custom_fields', user_uuid: user.external_id -%}
+  {%- assign location_result = nil -%}
+  {%- assign location = nil -%}
+{%- endif -%}
+
+{%- comment -%}
+  First-visit bootstrap. If the user has no location_custom_field row yet, the
+  join returns no results and `location` is blank. Without this, the listing
+  forms would submit in CREATE mode but the `location_custom_field` join row
+  would never be created, so on the next page load `get_my_location` would
+  still return nil and the user's save would appear to have vanished.
+
+  Create both rows up-front:
+    - location record with status: 'disabled' (so the listing stays hidden
+      until the user toggles visibility on) and a fresh uuid
+    - location_custom_field join row linking user_uuid <-> location_uuid
+
+  Then re-fetch so the rest of the page renders in UPDATE mode just like the
+  returning-user path.
+{%- endcomment -%}
+{%- if location_result.location_uuid == blank -%}
+  {%- assign new_location_uuid = '' | uuid -%}
+  {%- graphql created_location = 'modules/locator/locations/create_my_location', uuid: new_location_uuid, status: 'disabled', location_name: user.email -%}
+  {%- graphql created_cf = 'modules/locator/locations/create_location_custom_field', user_uuid: user.external_id, location_uuid: new_location_uuid -%}
+  {%- graphql location_result = 'modules/locator/locations/get_my_location', user_uuid: user.external_id | dig: 'relation','results' | first -%}
+  {%- assign location = location_result | dig: 'location' -%}
+{%- endif -%}
+
+
 {%- graphql categories_result = 'modules/locator/categories/get_categories' -%}
 {%- assign categories = categories_result | dig: 'items' | dig: 'results' -%}
 

@@ -1,0 +1,12 @@
+mutation delete_my_location_custom_fields($user_uuid: String!) {
+  items: records_delete_all(
+    filter: {
+      table: { value: "modules/ins_locator/location_custom_field" }
+      properties: [
+        { name: "user_uuid", value: $user_uuid }
+      ]
+    }
+  ) {
+    count
+  }
+}
