@@ -62,6 +62,15 @@ p {
   box-shadow: none;
 }
 
+.my-locator-listing ins-tab .ins-tab-headers {
+    color: var(--font--font-color-body);
+    font-family: var(--font-family-02);
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 24px;
+}
+
 .my-locator-listing .ins-tab-headers li {
   margin-bottom: 0;
 }
