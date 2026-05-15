@@ -850,6 +850,7 @@ ins-tag.locator-tag--implementation .ins-tag {
    we zero it so the sticky footer sits flush against the drawer bottom. */
 #locator-filters-drawer .ins-content {
   padding-bottom: 0;
+  max-width: 100%;
 }
 
 #locator-filters-drawer .ins-drawer-body {
@@ -876,6 +877,23 @@ ins-tag.locator-tag--implementation .ins-tag {
   position: sticky;
   bottom: 0;
 }
+
+@media screen and (max-width: 400px) {
+  #locator-filters-drawer .locator-filter-footer {
+    flex-direction: column;
+    row-gap: 10px;
+  }
+  #locator-filters-drawer .locator-filter-footer ins-button,
+  #locator-filters-drawer .locator-filter-footer button {
+    width: 100% !important;
+  }
+} 
+
+@media screen and (max-width: 639px) {
+  #locator-filters-drawer .locator-filter-footer button {
+    margin-bottom: 0;
+  }
+} 
 
 /* ─── Page-hidden cards (pagination, still visible as map pins) ──────────── */
 
