@@ -128,9 +128,11 @@ metadata: {
                 </div>
               {%- endif -%}
               {%- if phone_full != '' -%}
+                {%- comment -%} tel: URIs allow `+` and digits; strip spaces so dialers parse it cleanly. {%- endcomment -%}
+                {%- assign phone_dial = phone_full | remove: ' ' -%}
                 <div class="locator-profile-contact-row">
                   <i class="icon-phone-1" aria-hidden="true"></i>
-                  <span>{{ phone_full }}</span>
+                  <a href="tel:{{ phone_dial | escape }}">{{ phone_full }}</a>
                 </div>
               {%- endif -%}
               {%- if partner.email and partner.email != '' -%}
