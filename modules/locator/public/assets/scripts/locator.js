@@ -385,11 +385,31 @@
       if (selectedCategories.hasOwnProperty(key)) { hasFilter = true; break; }
     }
     var visibleCount = 0;
+    var filteredInCards = [];
     for (var i = 0; i < cards.length; i++) {
       var tag = cards[i].getAttribute('data-tag') || '';
       var visible = !hasFilter || !!selectedCategories[tag];
       cards[i].style.display = visible ? '' : 'none';
-      if (visible) { visibleCount++; }
+      if (visible) {
+        visibleCount++;
+        filteredInCards.push(cards[i]);
+      }
+    }
+    // Rebuild SSR pagination over the filtered-in subset (only in SSR mode —
+    // after an API search, pagination is driven by data.total_pages and
+    // category filter only affects the cards on the current page).
+    if (!lastParams) {
+      ssrCards = filteredInCards;
+      ssrPage = 1;
+      if (ssrCards.length > SSR_PAGE_SIZE) {
+        ssrShowPage(1, true);
+      } else {
+        for (var k = 0; k < filteredInCards.length; k++) {
+          filteredInCards[k].classList.remove('is-page-hidden');
+        }
+        var paginationEl = document.getElementById('locator-pagination');
+        if (paginationEl) { paginationEl.innerHTML = ''; }
+      }
     }
     if (window.updateLocatorMap) { window.updateLocatorMap(); }
     if (!statusEl) { return; }
