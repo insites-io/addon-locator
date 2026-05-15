@@ -62,14 +62,19 @@ p {
   box-shadow: none;
 }
 
-.my-locator-listing ins-tab .ins-tab-headers {
-    color: var(--font--font-color-body);
-    font-family: var(--font-family-02);
-    font-size: 16px;
+.my-locator-listing ins-tab .ins-tab .ins-tab-headers .ins-tab-header{
+    color: var(--font-color-body) !important;
+    font-family: var(--font-family-02) !important;
+    font-size: 16px !important;
     font-style: normal;
-    font-weight: 700;
-    line-height: 24px;
+    font-weight: 400;
+    line-height: 24px !important;
 }
+
+.my-locator-listing ins-tab .ins-tab .ins-tab-headers .ins-tab-header.active {
+  font-weight: 700;
+}
+
 
 .my-locator-listing .ins-tab-headers li {
   margin-bottom: 0;
