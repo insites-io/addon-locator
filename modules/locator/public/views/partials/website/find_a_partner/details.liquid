@@ -39,7 +39,7 @@ metadata: {
   {%- assign tagline = partner.short_description | strip_html | strip -%}
 
   {%- comment -%} Banner — LCP candidate, prioritise fetch and provide dimensions to reserve space. {%- endcomment -%}
-  <div class="locator-profile-banner">
+  <div class="locator-profile-banner{% unless partner.image_1.url %} no-banner{% endunless %}">
     {%- if partner.image_1.url -%}
       <img src="{{ partner.image_1.url | replace: ' ', '%20' }}" alt="" class="locator-profile-banner__img" aria-hidden="true" width="1920" height="600" fetchpriority="high" decoding="async">
     {%- endif -%}

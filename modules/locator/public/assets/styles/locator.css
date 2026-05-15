@@ -488,7 +488,7 @@ ins-input-select input {
 .locator-card__logo .placeholder-img,
 .locator-map-card__logo .placeholder-img {
   width: 100%;
-  font-size: 28px;
+  font-size: 24px;
 }
 
 .locator-card__body {
@@ -953,7 +953,11 @@ ins-tag.locator-tag--implementation .ins-tag {
   width: 100%;
   height: 600px;
   overflow: hidden;
-  background-color: var(--color-ui-03);
+  background-color: var(--color-sub1);
+}
+
+.locator-profile-banner.no-banner {
+  height: 92px;
 }
 
 .locator-profile-banner__img {
