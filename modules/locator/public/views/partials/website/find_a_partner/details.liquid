@@ -108,9 +108,19 @@ metadata: {
 
         <div class="locator-profile-main">
           {%- if partner.long_description and partner.long_description != '' -%}
-            {%- comment -%} Add lazy-loading hints to any <img> in the rich-text body — these sit below the fold. {%- endcomment -%}
-            {%- assign long_description_lazy = partner.long_description | replace: '<img ', '<img loading="lazy" decoding="async" ' -%}
-            <div class="locator-profile-section__body">{{ long_description_lazy }}</div>
+            {%- comment -%}
+              Sanitise the rich-text body before output:
+              1. Strip <grammarly-extension> wrappers injected by the Grammarly browser extension
+                 while the partner edited the field in ins-editor. They're saved into the DB but
+                 should never reach the public page. Open-tag prefix + closing tag are constant;
+                 attributes vary, so we rewrite them to <span hidden …> which neutralises them.
+              2. Add lazy-loading hints to any <img> since these sit below the fold.
+            {%- endcomment -%}
+            {%- assign long_description_clean = partner.long_description
+                | replace: '<grammarly-extension', '<span hidden'
+                | replace: '</grammarly-extension>', '</span>'
+                | replace: '<img ', '<img loading="lazy" decoding="async" ' -%}
+            <div class="locator-profile-section__body">{{ long_description_clean }}</div>
           {%- endif -%}
         </div>
 
