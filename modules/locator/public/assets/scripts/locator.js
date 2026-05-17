@@ -376,6 +376,12 @@
         btn.removeAttribute('icon-right');
       }
     }
+    // Inline "× Clear" link next to the Partner tier label — only visible
+    // when something is actually selected.
+    var clearEl = document.getElementById('locator-filters-clear-btn');
+    if (clearEl) {
+      clearEl.hidden = count === 0;
+    }
   }
 
   function filterByCategories() {
@@ -749,12 +755,15 @@
       '<ins-drawer id="locator-filters-drawer" label="Filters" position="right" custom-width="400px" backdrop-can-close>' +
         '<div class="locator-filter-body">' +
           '<div class="locator-filter-group" id="locator-filter-categories" role="group" aria-labelledby="locator-filter-categories-label" style="display:none">' +
-            '<p class="locator-filter-group__label" id="locator-filter-categories-label">Partner tier</p>' +
+            '<div class="locator-filter-group__head">' +
+              '<p class="locator-filter-group__label" id="locator-filter-categories-label">Partner tier</p>' +
+              '<button type="button" id="locator-filters-clear-btn" class="locator-filter-group__clear" hidden>' +
+                '<i class="icon-close-1" aria-hidden="true"></i>' +
+                '<span>Clear</span>' +
+              '</button>' +
+            '</div>' +
             '<div id="locator-filter-category-list"></div>' +
           '</div>' +
-        '</div>' +
-        '<div class="locator-filter-footer">' +
-          '<ins-button id="locator-filters-clear-btn" label="Clear all" icon="icon-trash-2" outlined color="primary"></ins-button>' +
         '</div>' +
       '</ins-drawer>';
     document.body.insertAdjacentHTML('beforeend', html);
@@ -775,7 +784,7 @@
     }
     var clearBtn = document.getElementById('locator-filters-clear-btn');
     if (clearBtn) {
-      clearBtn.addEventListener('insClick', function () {
+      clearBtn.addEventListener('click', function () {
         var boxes = listEl ? listEl.querySelectorAll('ins-checkbox') : [];
         for (var i = 0; i < boxes.length; i++) {
           try { boxes[i].updateCheckState(false); } catch (ex) {}

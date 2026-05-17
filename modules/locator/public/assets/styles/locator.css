@@ -834,12 +834,45 @@ ins-tag.locator-tag--implementation .ins-tag {
   padding: 8px 0;
 }
 
+.locator-filter-group__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
 .locator-filter-group__label {
   font-family: var(--font-family-02);
   font-size: 16px;
   font-weight: 700;
   line-height: 150%;
   color: var(--font-color-head);
+}
+
+/* Inline "× Clear" link next to the group label. Toggled via `hidden` attr by JS. */
+.locator-filter-group__clear {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 24px;
+  padding: 0;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  cursor: pointer;
+  color: var(--color-main);
+  font-family: var(--font-family-01);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.locator-filter-group__clear[hidden] {
+  display: none;
+}
+
+.locator-filter-group__clear i {
+  font-size: 12px;
 }
 
 .locator-filter-divider {
@@ -859,55 +892,14 @@ ins-tag.locator-tag--implementation .ins-tag {
   font-weight: 400;
 }
 
-/* Footer pinned to the drawer bottom regardless of content height. ins-drawer
-   reserves 95px of padding-bottom on .ins-content for built-in footer space;
-   we zero it so the sticky footer sits flush against the drawer bottom. */
 #locator-filters-drawer .ins-content {
-  padding-bottom: 0;
   max-width: 100%;
 }
 
 #locator-filters-drawer .ins-drawer-body {
-  display: flex;
-  flex-direction: column;
-  min-height: calc(100dvh - 80px);
   padding: 16px;
   box-sizing: border-box;
 }
-
-#locator-filters-drawer .locator-filter-body {
-  flex: 1 0 auto;
-}
-
-#locator-filters-drawer .locator-filter-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  margin: 16px -16px -16px;
-  padding: 16px;
-  border-top: 1px solid var(--color-ui-04);
-  background: var(--color-ui-01);
-  position: sticky;
-  bottom: 0;
-}
-
-@media screen and (max-width: 400px) {
-  #locator-filters-drawer .locator-filter-footer {
-    flex-direction: column;
-    row-gap: 10px;
-  }
-  #locator-filters-drawer .locator-filter-footer ins-button,
-  #locator-filters-drawer .locator-filter-footer button {
-    width: 100% !important;
-  }
-} 
-
-@media screen and (max-width: 639px) {
-  #locator-filters-drawer .locator-filter-footer button {
-    margin-bottom: 0;
-  }
-} 
 
 /* ─── Page-hidden cards (pagination, still visible as map pins) ──────────── */
 
