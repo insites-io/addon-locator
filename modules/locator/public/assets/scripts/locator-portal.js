@@ -151,9 +151,9 @@
           return;
         }
         if (status === 'enabled') {
-          App.events.notyf('success', 'Your listing is no longer visible on the partner directory.');
-        } else {
           App.events.notyf('success', 'Your listing is now visible on the partner directory.');
+        } else {
+          App.events.notyf('success', 'Your listing is no longer visible on the partner directory.');
         }
       }).catch(function () {
         App.events.notyf('error', 'Failed to update visibility.');
