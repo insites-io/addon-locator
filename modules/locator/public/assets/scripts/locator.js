@@ -755,7 +755,6 @@
         '</div>' +
         '<div class="locator-filter-footer">' +
           '<ins-button id="locator-filters-clear-btn" label="Clear all" icon="icon-trash-2" outlined color="primary"></ins-button>' +
-          '<ins-button id="locator-filters-apply-btn" label="Apply Filters" icon="icon-check-2" solid color="primary"></ins-button>' +
         '</div>' +
       '</ins-drawer>';
     document.body.insertAdjacentHTML('beforeend', html);
@@ -783,12 +782,6 @@
         }
         selectedCategories = {};
         filterByCategories();
-      });
-    }
-    var applyBtn = document.getElementById('locator-filters-apply-btn');
-    if (applyBtn) {
-      applyBtn.addEventListener('insClick', function () {
-        filtersDrawer.setDrawerState(false);
       });
     }
     return filtersDrawer;
