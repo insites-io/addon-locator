@@ -1,0 +1,17 @@
+query get_location_slugs($slug: String!) {
+  items: records(
+    per_page: 100
+    filter: {
+      table: { value: "modules/insites_locator/location" }
+      deleted_at: { exists: false }
+      properties: [
+        { name: "slug", starts_with: $slug }
+      ]
+    }
+  ) {
+    results {
+      id
+      slug: property(name: "slug")
+    }
+  }
+}

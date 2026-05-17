@@ -37,6 +37,57 @@ fields:
     long_description:
     location_image:
     image_1:
+async_callback_actions:
+  delay: 0
+  priority: low
+  max_attempts: 2
+  content: |-
+    {%- comment -%}
+      Auto-generate the location's `slug` after a successful profile save.
+      Runs asynchronously after PlatformOS has persisted the form, so the
+      user gets a fast response and the slug update happens out-of-band.
+
+      Steps:
+        1. Build a kebab-case `base` from the just-saved location_name.
+           Liquid has no regex, so we collapse spaces / underscores to "-"
+           and lowercase — punctuation is left in (rare in company names).
+        2. Fetch only the rows whose slug starts with `base` (via
+           starts_with filter), skip our own row (form.id), and pack the
+           rest into a pipe-delimited haystack so `contains` can do
+           uniqueness checks cheaply.
+        3. Try `base`, then `base-2`, `base-3`, … up to 100, until one
+           isn't in the haystack.
+        4. record_update the slug onto the record we just saved.
+
+      No-ops if location_name is blank or the kebab result is empty.
+    {%- endcomment -%}
+    {%- assign raw_name = form.properties.location_name | default: '' | strip -%}
+    {%- if raw_name != '' -%}
+      {%- assign base = raw_name
+            | downcase
+            | replace: '_', '-'
+            | replace: ' ', '-' -%}
+      {%- if base != '' -%}
+        {%- graphql slugs = 'modules/locator/locations/get_location_slugs', slug: base -%}
+        {%- assign rows = slugs | dig: 'items','results' -%}
+        {%- assign haystack = '' -%}
+        {%- for row in rows -%}
+          {%- unless row.id == form.id or row.slug == blank -%}
+            {%- assign haystack = haystack | append: '|' | append: row.slug | append: '|' -%}
+          {%- endunless -%}
+        {%- endfor -%}
+        {%- assign final_slug = base -%}
+        {%- for n in (1..100) -%}
+          {%- capture probe -%}|{{ final_slug }}|{%- endcapture -%}
+          {%- unless haystack contains probe -%}
+            {%- break -%}
+          {%- endunless -%}
+          {%- assign suffix = n | plus: 1 -%}
+          {%- assign final_slug = base | append: '-' | append: suffix -%}
+        {%- endfor -%}
+        {%- graphql slug_update = 'modules/locator/locations/update_location_slug', id: form.id, slug: final_slug -%}
+      {%- endif -%}
+    {%- endif -%}
 ---
 
 <h2 class="heading-2-xxsmall">Profile</h2>

@@ -64,7 +64,7 @@ authorization_policies:
 
 
 {%- graphql categories_result = 'modules/locator/categories/get_categories' -%}
-{%- assign categories = categories_result | dig: 'items' | dig: 'results' -%}
+{%- assign categories = categories_result | dig: 'items','results' -%}
 
 <div class="my-locator-listing">
   <div class="locator-listing__head">

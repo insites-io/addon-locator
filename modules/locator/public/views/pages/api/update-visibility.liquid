@@ -20,7 +20,7 @@ metadata: {
   { "ok": false, "error": "invalid_status" }
 {%- else -%}
   {%- graphql location_result = 'modules/locator/locations/get_my_location', user_uuid: user_uuid -%}
-  {%- assign location = location_result | dig: 'relation' | dig: 'results' | first | dig: 'location' -%}
+  {%- assign location = location_result | dig: 'relation','results' | first | dig: 'location' -%}
 
   {%- if location == blank or location.id == blank -%}
     { "ok": false, "error": "location_not_found" }
