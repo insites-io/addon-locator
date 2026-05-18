@@ -29,10 +29,26 @@ The add-on is gated behind the `locator_addon` constant — app-portal layouts r
 
 #### Initial page load
 
-1. The server renders up to **30 location cards** from the database via `get_locations.graphql`.
+The page's `results.liquid` partial picks one of three SSR queries based on the URL params, mirroring the AJAX endpoint at `api/locator/find-a-partner.liquid` exactly. The chosen mode is exposed to JS via `data-ssr-mode` on `#locator-list`, so `view-source` matches the live DOM and shared links skip an unnecessary fetch.
+
+**`directory` mode** — no URL params, the default landing page.
+
+1. The server renders up to **30 location cards** from `get_locations.graphql`.
 2. All 30 cards are written into the HTML DOM so the map can pin all of them immediately.
 3. The list panel shows **10 cards at a time** — the rest are hidden via the `.is-page-hidden` CSS class. Pagination buttons appear below the list when there are more than 10 results.
 4. Clicking a pagination button shows the next/previous 10 cards in the list and smoothly scrolls the browser to the top of the list. Map pins are unaffected — all 30 remain visible.
+
+**`text` mode** — URL has `?search=…` only (legacy/manual link, no `lat`/`lng`).
+
+1. The server runs `get_locations.graphql` with a text-contains filter on `city` / `postcode` / `address_1`. The SSR set is approximate, not the geocoded radius set.
+2. `locator.js` detects the search param, kicks the Google Maps lazy-loader, waits for `google.maps`, then runs `doSearch()` which geocodes the term and AJAX-refetches `/api/locator/find-a-partner` for the precise radius set. The list panel is replaced with the response.
+3. Same flow as a fresh button-click search from this point on.
+
+**`geo` mode** — URL has `?search=…&distance=…&lat=…&lng=…` (a shared link from a previous search).
+
+1. The server runs `get_locations_nearby.graphql` with `point` + `distance` + `page` from the URL — the *same* query the AJAX endpoint uses.
+2. Pagination buttons are pre-rendered server-side from `total_pages` / `current_page`.
+3. `locator.js` sees `data-ssr-mode="geo"` and **short-circuits**: it hydrates `currentLocation` / `currentDistance` / `lastParams` from the URL, seeds the hidden `lat`/`lng` inputs, calls `updateLocatorMap(center, distance)` to fit the map to the radius, and **does not fire an AJAX call or wait for `google.maps`** — there's nothing for them to do. View-source = live DOM, no flash, no duplicate fetch.
 
 #### Location search
 
@@ -53,7 +69,7 @@ The add-on is gated behind the `locator_addon` constant — app-portal layouts r
 7. The list panel is replaced with the returned HTML. Pagination is rendered from the API response (`total_pages`, `current_page`).
 8. A **red pin** (`--error-hover` colour) is placed on the map at the searched lat/lng to mark the user's search location. All partner result pins are placed in the standard brand colour.
 9. The status bar (`#locator-status`) updates to show e.g. `"8 partners within 15km of Sydney, NSW."` or `"3 partners within 15km of postcode 5000."`.
-10. The URL is updated via `history.pushState` so the search is shareable and supports the browser back button.
+10. The URL is updated via `history.pushState` with `search`, `distance`, `lat`, and `lng` so the search is shareable and supports the browser back button. Including `lat`/`lng` makes the link a complete, deterministic recipe — visiting it later seeds the hidden lat/lng inputs from the URL, skips both the Places autocomplete and the Geocoder fallback, and fires the same `/api/locator/find-a-partner` call. Example: `/find-a-partner?search=Sydney&distance=10&lat=-33.8688&lng=151.2093`.
 
 #### Category filter
 

@@ -708,7 +708,13 @@
     if (pushState) {
       var qp = [];
       if (params.location) { qp.push('search=' + encodeURIComponent(params.location)); }
-      if (params.distance)   { qp.push('distance=' + params.distance); }
+      if (params.distance) { qp.push('distance=' + params.distance); }
+      // Include lat/lng so the URL is a complete, deterministic recipe — visiting
+      // the link skips the geocoder and reproduces the same result set.
+      if (params.lat && params.lng) {
+        qp.push('lat=' + encodeURIComponent(params.lat));
+        qp.push('lng=' + encodeURIComponent(params.lng));
+      }
       var pageUrl = window.location.pathname + (qp.length ? '?' + qp.join('&') : '');
       history.pushState({ search: params.location, distance: params.distance, lat: params.lat, lng: params.lng }, '', pageUrl);
     }
@@ -896,9 +902,48 @@
 
   var initialSearch = getUrlParam('search');
   var initialDistance = getUrlParam('distance');
+  var initialLat = getUrlParam('lat');
+  var initialLng = getUrlParam('lng');
+  var ssrMode = locatorList.getAttribute('data-ssr-mode') || '';
   searchTotal = locatorList.querySelectorAll('.locator-card').length;
   syncDistanceState();
-  if (initialSearch) {
+  if (ssrMode === 'geo' && initialSearch) {
+    // Server already ran get_locations_nearby with this exact URL and rendered
+    // the matching cards + pagination. Hydrate state and skip the AJAX entirely
+    // — view-source matches the live DOM, no flash-of-stale-content swap.
+    currentLocation = initialSearch;
+    locationEl.setAttribute('value', initialSearch);
+    setDistance(initialDistance);
+    syncDistanceState();
+    if (initialLat && initialLng && latEl && lngEl) {
+      latEl.value = initialLat;
+      lngEl.value = initialLng;
+    }
+    var ssrDisplay = isPostcode(initialSearch) ? 'postcode ' + initialSearch.trim() : initialSearch;
+    var ssrTotal = parseInt(locatorList.getAttribute('data-ssr-total') || '0', 10);
+    searchTotal = ssrTotal;
+    updateStatus(ssrTotal, ssrDisplay, initialDistance);
+    history.replaceState({ search: initialSearch, distance: initialDistance, lat: initialLat, lng: initialLng }, '', window.location.href);
+    // Pagination clicks read lastParams; geocoder is not needed because we
+    // already have the resolved coordinates.
+    lastParams = {
+      location: initialSearch,
+      lat: initialLat,
+      lng: initialLng,
+      distance: initialDistance,
+      displayLocation: ssrDisplay
+    };
+    // Seed the map with center + radius. updateLocatorMap stores these even
+    // if google.maps hasn't loaded yet; setupMarkers will use them once it does.
+    if (window.updateLocatorMap) {
+      window.updateLocatorMap({ lat: parseFloat(initialLat), lng: parseFloat(initialLng) }, initialDistance);
+    }
+    // No setupInitialPagination — SSR returned a single page of geo results,
+    // not the full 30-card directory.
+  } else if (initialSearch) {
+    // Text-only SSR mode (legacy URL with no lat/lng). SSR's text-contains
+    // set differs from the AJAX radius set, so we still need to refine via
+    // the geocoder + /api/locator/find-a-partner.
     currentLocation = initialSearch;
     locationEl.setAttribute('value', initialSearch);
     syncDistanceState();
@@ -906,12 +951,7 @@
     var initialDisplay = isPostcode(initialSearch) ? 'postcode ' + initialSearch.trim() : initialSearch;
     var initialDistanceDisplay = initialDistance || currentDistance;
     updateStatus(searchTotal, initialDisplay, initialDistanceDisplay);
-    history.replaceState({ search: initialSearch, distance: initialDistanceDisplay }, '', window.location.href);
-    // The SSR query is a text-contains match on city/postcode/address_1 and
-    // returns a different set than the geocoded radius search the button-click
-    // flow uses. Trigger doSearch() so the URL-loaded results match the
-    // interactive search results. Needs Maps for the geocoder — kick the lazy
-    // loader and poll until google.maps is ready.
+    history.replaceState({ search: initialSearch, distance: initialDistanceDisplay, lat: initialLat, lng: initialLng }, '', window.location.href);
     if (window.locatorLoadMaps) { window.locatorLoadMaps(); }
     var mapsReadyAttempts = 0;
     var mapsReadyInterval = setInterval(function () {
@@ -920,8 +960,6 @@
         clearInterval(mapsReadyInterval);
         doSearch(false);
       } else if (mapsReadyAttempts > 100) {
-        // Maps failed to load after ~10s — fall back to a non-geocoded fetch
-        // so the user still gets fresh results (even if they match the SSR set).
         clearInterval(mapsReadyInterval);
         doSearch(false);
       }

@@ -4,11 +4,37 @@ metadata: {
 }
 ---
 
-{%- assign search_q = context.params.search | strip -%}
-{%- if search_q != blank -%}
+{%- assign search_q   = context.params.search   | strip -%}
+{%- assign lat_q      = context.params.lat      | strip -%}
+{%- assign lng_q      = context.params.lng      | strip -%}
+{%- assign distance_q = context.params.distance | strip -%}
+{%- assign page_q     = context.params.page     | strip | plus: 0 -%}
+{%- if page_q == 0 -%}{%- assign page_q = 1 -%}{%- endif -%}
+
+{%- comment -%}
+  Pick the query that matches the URL, mirroring the AJAX endpoint at
+  /api/locator/find-a-partner so "view source" reflects what the user sees:
+
+    geo       — search + lat + lng + distance present. Same radius query
+                the AJAX endpoint runs (get_locations_nearby). locator.js
+                short-circuits its initial fetch when it sees data-ssr-mode="geo".
+    text      — search only (no lat/lng yet, e.g. a legacy/manual link).
+                Text-contains match. locator.js still has to AJAX-refine via
+                the geocoder, since the geo set isn't computable server-side.
+    directory — no search params. Default landing query.
+{%- endcomment -%}
+{%- if lat_q != blank and lng_q != blank and distance_q != blank -%}
+  {%- assign point_json = '{"type":"Point","coordinates":[' | append: lng_q | append: ',' | append: lat_q | append: ']}' -%}
+  {%- assign point = point_json | parse_json -%}
+  {%- assign distance_int = distance_q | plus: 0 -%}
+  {%- graphql data = "modules/locator/locations/get_locations_nearby", point: point, distance: distance_int, page: page_q -%}
+  {%- assign ssr_mode = 'geo' -%}
+{%- elsif search_q != blank -%}
   {%- graphql data = "modules/locator/locations/get_locations", location: search_q -%}
+  {%- assign ssr_mode = 'text' -%}
 {%- else -%}
   {%- graphql data = "modules/locator/locations/get_locations" -%}
+  {%- assign ssr_mode = 'directory' -%}
 {%- endif -%}
 
 <section class="locator-results-section">
@@ -21,14 +47,31 @@ metadata: {
 
         {% comment %} Partner list {% endcomment %}
         <div class="locator-list-panel" id="locator-list-panel">
-          <div class="locator-list" id="locator-list">
+          <div class="locator-list" id="locator-list"
+               data-ssr-mode="{{ ssr_mode }}"
+               data-ssr-total="{{ data.items.total_entries }}"
+               data-ssr-current-page="{{ data.items.current_page | default: 1 }}"
+               data-ssr-total-pages="{{ data.items.total_pages | default: 1 }}">
 
             {% for location in data.items.results %}
               {% include 'modules/locator/website/find_a_partner/card' %}
             {% endfor %}
 
           </div>
-          <div class="locator-pagination" id="locator-pagination"></div>
+          <div class="locator-pagination" id="locator-pagination">
+            {%- comment -%}
+              SSR pagination only for the geo path — those rows are real
+              server-side pages of get_locations_nearby. Text/directory modes
+              get client-side pagination over the SSR-seeded 30 cards from
+              locator.js (`setupInitialPagination`).
+            {%- endcomment -%}
+            {%- if ssr_mode == 'geo' and data.items.total_pages > 1 -%}
+              {%- assign cp = data.items.current_page -%}
+              {%- for p in (1..data.items.total_pages) -%}
+                <button class="locator-page-btn{% if p == cp %} is-active{% endif %}" type="button" data-page="{{ p }}" aria-label="Page {{ p }}"{% if p == cp %} aria-current="page"{% endif %}>{{ p }}</button>
+              {%- endfor -%}
+            {%- endif -%}
+          </div>
         </div>
 
         {% comment %} Map {% endcomment %}
