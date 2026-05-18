@@ -724,8 +724,8 @@ ins-tag.locator-tag--implementation .ins-tag {
 }
 
 .locator-map-card__logo img {
-  width: 53px;
-  height: 53px;
+  width: 100%;
+  height: auto;
   object-fit: cover;
 }
 
@@ -1066,9 +1066,13 @@ ins-tag.locator-tag--implementation .ins-tag {
 }
 
 .locator-profile-logo img {
-  width: 140px;
-  height: 140px;
-  object-fit: contain;
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+}
+
+.locator-profile-logo .placeholder-img {
+    width: 100%;
 }
 
 .locator-profile-identity-col {
@@ -1345,7 +1349,7 @@ ins-tag.locator-tag--implementation .ins-tag {
     padding: 0 24px;
     position: relative;
     z-index: 1;
-  }
+  }  
 
   .locator-profile-heading {
     position: static;
