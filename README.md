@@ -1,19 +1,38 @@
 # Insites Add-On — Locator v1.1.0
 
-## Find a Partner Page
+This add-on is layered on top of an [app-portal](../app-portal/) deployment. It ships:
 
-The Find a Partner page (`/find-a-partner`) is a public-facing directory that lets visitors search for nearby Insites partners using a location search, distance filter, category filter, and an interactive Google Map.
+- **`/find-a-partner`** — public directory of partner locations with map + search + filters
+- **`/find-a-partner/{slug}`** — public partner profile page (rendered by the same page via `max_deep_level: 2`)
+- **`/my-locator-listing`** — portal page where logged-in users manage their public listing across Profile / Location / Social tabs
+- Three JSON API endpoints (`find-a-partner`, `update-visibility`, `upload-presign`)
+- Two migrations (`location_custom_field.user_uuid` + `constant_set` for `locator_addon` flag and `google_map_id`)
+
+The add-on is gated behind the `locator_addon` constant — app-portal layouts read `context.constants.locator_addon == 'true'` to show/hide the nav link, footer link, and portal sidebar entry.
 
 ---
+
+## Setup — Migrations
+
+| Migration | Purpose |
+|---|---|
+| `20260507000007_location_custom_field.liquid` | `admin_table_update` to add `user_uuid` (belongs_to users) to the `modules/ins_locator/location_custom_field` table — this is what makes the user ↔ location join work |
+| `20260513070054_constants.liquid` | Sets `locator_addon = true` (feature flag the app-portal layouts read) and `google_map_id = d55c604835e6ff00d4f4a0c0` (Map ID used by the `googlemaps` partial) |
+
+---
+
+## Find a Partner Page
+
+`/find-a-partner` is a public directory that lets visitors search for nearby Insites partners using a location search, distance filter, category filter, and an interactive Google Map. The page uses `max_deep_level: 2` so it also serves the Partner Profile page at `/find-a-partner/{slug}` (see [Partner Profile Page](#partner-profile-page) below).
 
 ### How it works
 
 #### Initial page load
 
-1. The server renders up to **100 location cards** from the database via `get_locations.graphql`.
-2. All 100 cards are written into the HTML DOM so the map can pin all of them immediately.
+1. The server renders up to **30 location cards** from the database via `get_locations.graphql`.
+2. All 30 cards are written into the HTML DOM so the map can pin all of them immediately.
 3. The list panel shows **10 cards at a time** — the rest are hidden via the `.is-page-hidden` CSS class. Pagination buttons appear below the list when there are more than 10 results.
-4. Clicking a pagination button shows the next/previous 10 cards in the list and smoothly scrolls the browser to the top of the list. Map pins are unaffected — all 100 remain visible.
+4. Clicking a pagination button shows the next/previous 10 cards in the list and smoothly scrolls the browser to the top of the list. Map pins are unaffected — all 30 remain visible.
 
 #### Location search
 
@@ -50,15 +69,15 @@ The list panel supports two views toggled by the **List / Grid** buttons:
 - **List view** — single-column cards with full description
 - **Grid view** — two-column cards with truncated description (2 lines)
 
-#### Clear filters
+#### Clearing search and filters
 
-Clicking **Clear filters** resets the location input, category selections, and distance, then reloads all results via AJAX without a full page refresh.
+Three separate controls:
 
----
+- **X icon in the location input** — appears when the input has a value. Clears location + distance + lat/lng and refetches all results via AJAX. **Category selections are preserved** (they'll re-apply against the new result set).
+- **"Clear filters" link in the status bar** — only shown when the category filter has hidden every card (`"No partners match your filters. Clear filters"`). Wired to the same handler as the X icon — clears location + distance and refetches; category selections are preserved.
+- **"× Clear" link in the filters drawer** — sits next to the "Partner tier" label, only visible when at least one category is checked. Unchecks every box and reruns the category filter. **Does not touch location or distance.**
 
-### Configuration
-
-#### Default country for geocoding (fallback path only)
+### Configuration — default country for geocoding (fallback path only)
 
 This only applies when a user types a postcode without selecting from the Places Autocomplete dropdown. When the geocoder fallback runs and the input is a postcode (digits only), the country name is appended to the query (e.g. `"5000"` becomes `"5000, Australia"`) to avoid ambiguous results.
 
@@ -66,55 +85,249 @@ The country is read from the CMS — **IIA → CMS → Globals → Locations →
 
 When the user selects from the autocomplete dropdown, the lat/lng comes directly from the Places API and this country value is not used.
 
+### Key files
+
+| File | Purpose |
+|---|---|
+| `views/pages/website/find-a-partner.liquid` | Page entry point — branches on `context.params.slug2` (profile vs directory) |
+| `views/partials/website/find_a_partner/list.liquid` | Directory layout — search bar, list panel, map panel |
+| `views/partials/website/find_a_partner/filters.liquid` | Search bar and controls bar |
+| `views/partials/website/find_a_partner/filters_drawer.liquid` | Filters side drawer |
+| `views/partials/website/find_a_partner/results.liquid` | Card list, map panel, Google Maps script |
+| `views/partials/website/find_a_partner/card.liquid` | Single result card (rendered by both SSR and AJAX) |
+| `views/pages/api/find-a-partner.liquid` | AJAX JSON endpoint |
+| `graphql/locations/get_locations.graphql` | Initial SSR query (up to 30 results) |
+| `graphql/locations/get_locations_nearby.graphql` | Geo-distance search query |
+| `assets/scripts/locator.js` | All client-side directory logic |
+| `assets/styles/locator.css` | All locator styles (both website and portal) |
+
 ---
+
+## Partner Profile Page
+
+`/find-a-partner/{location-slug}` is the public per-partner profile. It is **not a separate page file** — the directory page (`find-a-partner.liquid`) declares `max_deep_level: 2` and dispatches to the profile partial when `context.params.slug2` is set.
+
+### How it works
+
+1. `views/partials/website/find_a_partner/details.liquid` runs `get_location_detail.graphql` with `slug: context.params.slug2`.
+2. If no match, redirects to a 404.
+3. Otherwise renders:
+   - Banner image (`image_1`, marked `fetchpriority="high"` as the LCP element; falls back to a no-banner layout when absent)
+   - Logo, location name, category `<ins-tag>`, tagline, and "Open website" button
+   - Sanitised `long_description` HTML — strips Grammarly extension wrappers and adds `loading="lazy"` to inline `<img>` tags
+   - A contact-card sidebar with address, phone, email, website, and social links (Facebook, X, Instagram, LinkedIn, YouTube)
+
+### Slug generation
+
+Slugs are auto-generated by the Profile form's async callback when the listing is saved — see [My Locator Listing → Profile tab](#profile-tab) below. URL pattern: **`/find-a-partner/{kebab-cased-location-name}`**, deduped with `-2`/`-3` suffixes (up to `-100`).
 
 ### Key files
 
 | File | Purpose |
 |---|---|
-| `modules/locator/public/views/pages/website/find-a-partner.liquid` | Page entry point |
-| `modules/locator/public/views/partials/website/find_a_partner/filters.liquid` | Search bar and controls bar |
-| `modules/locator/public/views/partials/website/find_a_partner/filters_drawer.liquid` | Filters side drawer |
-| `modules/locator/public/views/partials/website/find_a_partner/results.liquid` | Card list, map panel, Google Maps script |
-| `modules/locator/public/views/pages/api/find-a-partner.liquid` | AJAX JSON endpoint |
-| `modules/locator/public/graphql/locations/get_locations.graphql` | Initial SSR query (up to 100 results) |
-| `modules/locator/public/graphql/locations/get_locations_nearby.graphql` | Geo-distance search query |
-| `modules/locator/public/assets/scripts/locator.js` | All client-side logic |
-| `modules/locator/public/assets/styles/locator.css` | All locator styles |
+| `views/partials/website/find_a_partner/details.liquid` | Profile partial — renders banner, contact card, and sanitised long description |
+| `graphql/locations/get_location_detail.graphql` | Lookup by `slug`; returns all public profile fields + `related_record` category |
 
 ---
 
 ## My Locator Listing (Portal)
 
-The My Locator Listing page (`/my-locator-listing`) lets portal users manage their public partner profile across three tabs: Profile, Location, and Social links.
+`/my-locator-listing` lets a logged-in portal user manage their public partner profile across three tabs (Profile / Location / Social links) and toggle public visibility.
 
----
+### Data model — user ↔ location join
 
-### Data model
-
-#### Location record
-
-Location data is stored in the `modules/insites_locator/location` table (schema: `module-locator` repo at `pos/modules/insites_locator/private/schema/location.yml`).
-
-The location table has **no direct user field**. The association between a portal user and their location is stored in a separate join table:
+The `modules/insites_locator/location` table has **no direct user field**. The link is stored in a separate join table:
 
 **`modules/ins_locator/location_custom_field`**
 
 | Property | Description |
 |---|---|
-| `user_uuid` | The portal user's `external_id` (CRM UUID) |
+| `user_uuid` | The portal user's `external_id` (CRM UUID) — added by migration `20260507000007` |
 | `location_uuid` | The location record's `uuid` property |
 
-To fetch the current user's location, query `location_custom_field` filtered by `user_uuid`, then join to the location via `related_record` on `location_uuid ↔ uuid`. See `get_my_location.graphql`.
+`get_my_location.graphql` queries this join by `user_uuid`, then uses `related_record` on `location_uuid ↔ uuid` to pull the full location record.
 
----
+### Page lifecycle
+
+`views/pages/portal/my-locator-listing.liquid` runs these steps server-side on every request:
+
+1. **Fetch.** `get_my_location` for `user.external_id`.
+2. **Orphan cleanup.** If the join row exists but its joined location is gone (admin deleted the location from the front-end admin UI without removing the join row), call `delete_my_location_custom_fields` to wipe all of the user's join rows, then fall through to step 3.
+3. **First-visit bootstrap.** If the user has no join row, create both rows up-front:
+   - `create_my_location` — new location record with a fresh `uuid`, `status: disabled` (so the listing stays hidden until the user toggles visibility on), and `location_name: user.email`
+   - `create_location_custom_field` — join row linking `user_uuid ↔ location_uuid`
+
+   Then re-fetch so the rest of the page renders the forms in UPDATE mode just like the returning-user path. Without this bootstrap the listing forms would submit in CREATE mode but the join row would never be created — the next page load would still return nil and the save would appear to have vanished.
+4. **Categories.** `get_categories` for the Partner Type dropdown.
+5. **Render.** Page header (with visibility toggle + hidden-listing info banner), then `<ins-tab>` with three `<ins-tab-item>`s.
+6. **Active-tab restore.** After a form submit, the active tab is restored from the flash message (`Listing-Profile` / `Listing-Location` / `Listing-Social`) so the page reopens on the tab the user just saved. Six notyf scripts emit success/error toasts for the six flash states.
+
+### Visibility toggle
+
+The `<ins-toggle-switch id="locator-visibility">` in the page header drives public visibility:
+
+- `checked` when `location.status == 'enabled'`
+- On `insToggle`, `LocatorPortal.updateVisibility(status)` calls `GET /api/locator/update-visibility?status=enabled|disabled`, which runs `update_listing_status.graphql` and returns `{ ok: true, status }`.
+- The hidden-listing banner (`#locator-visibility-banner`) hides when visibility is on and shows when off.
+
+### Profile tab
+
+`views/partials/portal/listing_profile_fields.liquid` — the form is rendered by `forms/portal/listing_profile.liquid`, which updates `modules/insites_locator/location`.
+
+Fields:
+- Logo `<ins-image-picker>` (120×120) and banner picker (1440×600) — both upload to S3 via the presigned-URL flow (see [Image upload flow](#image-upload-flow) below)
+- Company Name, Email, `<ins-input-tel>` (with hidden mirror inputs for `phone_number` + `phone_country_code`), Website
+- Partner Type `<ins-input-select>` sourced from `categories`
+- Partner Tier (readonly, not yet wired)
+- Short Description `<ins-textarea>` (150-char counter)
+- About Company `<ins-editor>` (HTML, not markdown — matches the admin)
+- Submit button
+
+**Slug generation (async callback).** After a successful save, the form's `async_callback_actions` runs server-side to keep `location.slug` in sync with `location_name`:
+
+1. Kebab-case `location_name` to form a base slug.
+2. Query `get_location_slugs.graphql` for any slugs starting with that base.
+3. Dedupe against the in-memory haystack (skipping `form.id` so the record's own slug doesn't collide with itself), trying `base`, `base-2`, … `base-100`.
+4. `update_location_slug.graphql` writes the resolved slug back to the record.
+
+The resulting slug is what the public Partner Profile page (`/find-a-partner/{slug}`) resolves on.
+
+### Location tab
+
+`views/partials/portal/listing_location_fields.liquid` — form rendered by `forms/portal/listing_location.liquid`.
+
+- A Google Places `address-lookup` search input (prefix `listing` so app-portal's `address-lookup.js` auto-fills `listing_address_1`, `listing_suburb`, etc.)
+- Hidden `latitude`, `longitude`, and `geojson` inputs (built client-side from lat/lng before submit — see [`validateForm`](#client-side-validateform) below)
+- Address 1, Address 2, Suburb, State, Postcode, Country
+
+### Social tab
+
+`views/partials/portal/listing_social_fields.liquid` — form rendered by `forms/portal/listing_social.liquid`.
+
+Six URL inputs: Facebook, X, YouTube, LinkedIn, Instagram, Snapchat. The first five use the `url-field` attribute and are normalised to `https://` on submit; Snapchat is plain text (since it's a username, not a URL).
+
+### Client-side `validateForm`
+
+All three forms share `LocatorPortal.validateForm` (in `locator-portal.js`) as their `html-onsubmit` handler. Before delegating to `App.validation.validateForm`, it:
+
+1. Bridges `<ins-input-tel>` to its two hidden inputs by calling `getValues()` and writing `phone_number` and `country_code` into them.
+2. Builds the `geojson` Point string from the hidden `latitude` and `longitude` inputs.
+3. Normalises bare URLs by prepending `https://` to any `[url-field]` input that lacks a protocol.
+
+If validation passes, all `<ins-button>` elements are disabled and the submit button is set to `loading=true` before the form submits.
+
+### Image upload flow
+
+Logo and banner images use the `<ins-image-picker>` component, but the picker only holds a base64 data URL — it does not upload. `LocatorPortal.uploadImage` (bound to the picker's `insValueChange` event) handles the upload:
+
+1. `GET /api/locator/upload-presign?table=modules/insites_locator/location&property={field}` (where `{field}` is `location_image` for the logo or `image_1` for the banner) returns `{ s3_upload: { direct_upload_url, form_data } }` from the `get_s3_upload.graphql` mutation.
+   - **Note** — the request must override the `Accept` header to `application/json` because PlatformOS `format: json` pages only match a single content type (see CLAUDE.md for the full quirk).
+2. `base64ToBlob` converts the picker's data URL to a Blob.
+3. `POST` the blob to S3 as `multipart/form-data` (`form_data` fields + the `file` blob).
+4. Parse the returned XML (`<Location>`), URL-decode it, and write the resulting public URL into the hidden form input for the field (`#locator-logo-url` or `#locator-banner-url`).
+
+On failure, the picker is cleared and a notyf error is shown.
 
 ### Key files
 
 | File | Purpose |
 |---|---|
-| `modules/locator/public/views/pages/portal/my-locator-listing.liquid` | Page entry point — fetches user, location, and categories |
-| `modules/locator/public/views/partials/portal/profile.liquid` | Profile tab form fields |
-| `modules/locator/public/forms/portal/locator_profile.liquid` | PlatformOS form definition for `modules/insites_locator/location` |
-| `modules/locator/public/graphql/locations/get_my_location.graphql` | Fetches the current user's location via `location_custom_field` join |
-| `modules/locator/public/graphql/categories/get_categories.graphql` | Fetches all categories for the Partner Type dropdown |
+| `views/pages/portal/my-locator-listing.liquid` | Page entry — fetch / orphan cleanup / bootstrap / tabs |
+| `views/partials/portal/listing_profile_fields.liquid` | Profile tab fields |
+| `views/partials/portal/listing_location_fields.liquid` | Location tab fields |
+| `views/partials/portal/listing_social_fields.liquid` | Social tab fields |
+| `forms/portal/listing_profile.liquid` | Profile form — UPDATE + async slug-generation callback |
+| `forms/portal/listing_location.liquid` | Location form — UPDATE address fields + lat/lng + geojson |
+| `forms/portal/listing_social.liquid` | Social form — UPDATE six social link fields |
+| `assets/scripts/locator-portal.js` | `LocatorPortal` IIFE — validateForm, uploadImage, updateVisibility, normalizeUrlFields |
+
+---
+
+## API endpoints
+
+All endpoints are PlatformOS pages with `format: json`.
+
+| Endpoint | Purpose |
+|---|---|
+| `GET /api/locator/find-a-partner` | Directory search. Branches on params: `lat`+`lng`+`distance` → `get_locations_nearby` (geo-radius via `distance_sphere`); `location` text → `get_locations` (contains-match on city / postcode / address_1); else all enabled locations. Returns `{ html, total, total_pages, current_page }` where `html` is server-rendered card markup. |
+| `GET /api/locator/update-visibility` | Toggles the current user's location `status` to `enabled` / `disabled` via `update_listing_status`. Returns `{ ok: true, status }` or error JSON (`unauthorized`, `invalid_status`, `location_not_found`). |
+| `GET /api/locator/upload-presign?table=...&property=...` | Calls `get_s3_upload` mutation for the given `table` + `property` and returns the S3 presigned upload payload, wrapped under `s3_upload: { direct_upload_url, form_data }`, for client-side image upload. |
+
+---
+
+## GraphQL queries
+
+### `locations/`
+
+| Query | Purpose |
+|---|---|
+| `create_my_location.graphql` | `record_create` a location with `uuid`, `status`, `location_name` (used by first-visit bootstrap) |
+| `create_location_custom_field.graphql` | `record_create` the join row linking `user_uuid ↔ location_uuid` |
+| `delete_my_location_custom_fields.graphql` | `records_delete_all` join rows for a `user_uuid` (orphan cleanup) |
+| `get_my_location.graphql` | Fetches the current user's join row + `related_record` to the full location |
+| `get_locations.graphql` | Paged list of enabled locations, optional `location` text matches city / postcode / address_1, sorted by `updated_at DESC` |
+| `get_locations_nearby.graphql` | Paged geo-radius search via `distance_sphere` on the `geojson` property, requires `status=enabled` |
+| `get_location_detail.graphql` | Single location lookup by `slug`, returns all public profile fields + `related_record` category |
+| `get_location_slugs.graphql` | All slugs starting with a prefix (per_page 100), used by the slug-generation callback |
+| `update_listing_status.graphql` | `record_update` only the `status` field |
+| `update_location_slug.graphql` | `record_update` only the `slug` field |
+
+### `categories/`
+
+| Query | Purpose |
+|---|---|
+| `get_categories.graphql` | All categories sorted by `category_name`, returns `{ id, name, uuid }` |
+
+### `system/`
+
+| Query | Purpose |
+|---|---|
+| `get_s3_upload.graphql` | `property_upload_presigned_url` mutation, aliased as `s3_upload`, returning `{ direct_upload_url, form_data }` |
+
+---
+
+## Module layout
+
+```
+modules/locator/public/
+├── assets/
+│   ├── scripts/
+│   │   ├── locator.js          # Public directory (find-a-partner)
+│   │   └── locator-portal.js   # Portal listing forms + image upload + visibility
+│   └── styles/
+│       └── locator.css         # All locator styles (website + portal)
+├── forms/portal/
+│   ├── listing_profile.liquid
+│   ├── listing_location.liquid
+│   └── listing_social.liquid
+├── graphql/
+│   ├── categories/
+│   ├── locations/
+│   └── system/
+├── migrations/
+│   ├── 20260507000007_location_custom_field.liquid
+│   └── 20260513070054_constants.liquid
+└── views/
+    ├── pages/
+    │   ├── api/
+    │   │   ├── find-a-partner.liquid
+    │   │   ├── update-visibility.liquid
+    │   │   └── upload-presign.liquid
+    │   ├── portal/
+    │   │   └── my-locator-listing.liquid
+    │   └── website/
+    │       └── find-a-partner.liquid    # also serves /find-a-partner/{slug}
+    └── partials/
+        ├── layout/hero_title.liquid
+        ├── portal/
+        │   ├── listing_profile_fields.liquid
+        │   ├── listing_location_fields.liquid
+        │   └── listing_social_fields.liquid
+        └── website/find_a_partner/
+            ├── card.liquid
+            ├── details.liquid           # Partner Profile partial
+            ├── filters.liquid
+            ├── filters_drawer.liquid
+            ├── list.liquid              # Directory layout
+            └── results.liquid
+```
