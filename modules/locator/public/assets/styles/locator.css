@@ -21,10 +21,59 @@ p {
 
 .my-locator-listing .locator-listing__head-row {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 24px;
 }
+
+.my-locator-listing .locator-listing__head-text {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.my-locator-listing .locator-listing__actions {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+#locator-preview-link ins-button button {
+  min-width: 200px;
+}
+
+.locator-listing__visibility {
+  min-width: 195px;
+}
+
+/* At mobile, stack head-text on top of actions and right-align the actions
+   column so visibility + preview sit flush right (per the Figma mobile
+   layout). align-items: stretch lets head-text fill the row width so the
+   heading + subtitle stay left-aligned. */
+@media screen and (max-width: 1120px) {
+  .my-locator-listing .locator-listing__head-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .my-locator-listing .locator-listing__actions {
+    flex-direction: row;
+    width: 100%;
+    justify-content: space-between;
+  }
+}  
+
+/* Stack the preview button + visibility toggle at small mobile (≤460px) and
+   small tablet (640–829px) widths, where the row layout runs out of room. */
+@media screen and (max-width: 460px),
+       screen and (min-width: 640px) and (max-width: 829px) {
+  .my-locator-listing .locator-listing__actions {
+    flex-direction: column;
+    align-items: end;
+  }
+}
+
+
 
 .my-locator-listing .locator-listing__visibility {
   display: flex;

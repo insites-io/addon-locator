@@ -69,20 +69,37 @@ authorization_policies:
 <div class="my-locator-listing">
   <div class="locator-listing__head">
     <div class="locator-listing__head-row">
-      <h1 class="heading-1-xsmall">My locator listing</h1>
-      <div class="locator-listing__visibility">
-        <span class="form-label" id="locator-visibility-label">Public Visibility:</span>
-        <ins-toggle-switch
-          id="locator-visibility"
-          name="visibility"
-          role="switch"
-          aria-labelledby="locator-visibility-label"
-          {% if location.status == 'enabled' %}checked{% endif %}
-        ></ins-toggle-switch>
+      <div class="locator-listing__head-text">
+        <h1 class="heading-1-xsmall">My locator listing</h1>
+        <p>Update your public profile and control whether you appear on the partner locator.</p>
+      </div>
+      <div class="locator-listing__actions">
+        {%- comment -%}
+          "Preview my listing" — visible only when the listing is enabled.
+          Requires a slug; on a brand-new user the slug is generated async
+          after the first profile save, so we skip the link entirely when
+          slug is blank to avoid a broken /find-a-partner/ URL. JS keeps
+          the .hide state in sync with the toggle below.
+        {%- endcomment -%}
+        {%- if location.slug != blank -%}
+          <a href="/find-a-partner/{{ location.slug }}" target="_blank" rel="noopener"
+             id="locator-preview-link"
+             class="locator-listing__preview-link{% unless location.status == 'enabled' %} hide{% endunless %}">
+            <ins-button label="Preview my listing" icon-right="icon-arrow-up-right" outlined color="primary"></ins-button>
+          </a>
+        {%- endif -%}
+        <div class="locator-listing__visibility">
+          <span class="form-label" id="locator-visibility-label">Public Visibility:</span>
+          <ins-toggle-switch
+            id="locator-visibility"
+            name="visibility"
+            role="switch"
+            aria-labelledby="locator-visibility-label"
+            {% if location.status == 'enabled' %}checked{% endif %}
+          ></ins-toggle-switch>
+        </div>
       </div>
     </div>
-    <div class="spacer"></div>
-    <p>Update your public profile and control whether you appear on the partner locator.</p>
   </div>
 
   <div class="spacer x-large"></div>

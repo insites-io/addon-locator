@@ -5,13 +5,23 @@
     init: function () {
       var visibilityToggle = document.getElementById('locator-visibility');
       var visibilityBanner = document.getElementById('locator-visibility-banner');
-      if (visibilityToggle && visibilityBanner) {
+      var previewLink = document.getElementById('locator-preview-link');
+      if (visibilityToggle) {
         visibilityToggle.addEventListener('insToggle', function (e) {
           var checked = e.detail && e.detail.checked;
-          if (checked) {
-            visibilityBanner.classList.add('hide');
-          } else {
-            visibilityBanner.classList.remove('hide');
+          if (visibilityBanner) {
+            if (checked) {
+              visibilityBanner.classList.add('hide');
+            } else {
+              visibilityBanner.classList.remove('hide');
+            }
+          }
+          if (previewLink) {
+            if (checked) {
+              previewLink.classList.remove('hide');
+            } else {
+              previewLink.classList.add('hide');
+            }
           }
           LocatorPortal.updateVisibility(checked ? 'enabled' : 'disabled');
         });

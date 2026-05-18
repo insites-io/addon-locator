@@ -15,6 +15,7 @@ query get_my_location($user_uuid: String) {
         foreign_property: "uuid"
       ) {
         id
+        slug: property(name: "slug")
         location_name: property(name: "location_name")
         email: property(name: "email")
         phone_number: property(name: "phone_number")
