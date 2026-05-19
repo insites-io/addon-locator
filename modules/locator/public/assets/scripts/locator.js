@@ -829,10 +829,6 @@
     }
   });
 
-  if (window.matchMedia('(max-width: 639px)').matches) {
-    document.body.classList.add('locator-mobile-map-open');
-  }
-
   var seeMapBtn   = document.getElementById('locator-see-map-btn');
   var closeMapBtn = document.getElementById('locator-close-map-btn');
 

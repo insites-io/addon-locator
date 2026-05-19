@@ -85,6 +85,16 @@ The list panel supports two views toggled by the **List / Grid** buttons:
 - **List view** — single-column cards with full description
 - **Grid view** — two-column cards with truncated description (2 lines)
 
+#### Mobile layout (≤ 830px)
+
+The list and map are stacked rather than split:
+
+- On initial paint the **list of results is shown first**; the map panel is hidden.
+- A fixed **"See on map"** bar at the bottom of the viewport (`#locator-see-map-bar`) toggles the map open by adding `locator-mobile-map-open` to `<body>`, which switches the map panel to a fullscreen overlay.
+- While the overlay is open, the same bar swaps to **"Close map"** (`#locator-close-map-bar`), which removes the class and returns the user to the list.
+
+Google Maps is lazy-loaded on first user interaction (scroll / touchstart / click / keydown / mousemove) or `requestIdleCallback`, on both mobile and desktop — see [results.liquid](modules/locator/public/views/partials/website/find_a_partner/results.liquid).
+
 #### Clearing search and filters
 
 Three separate controls:

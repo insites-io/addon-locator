@@ -133,8 +133,8 @@ metadata: {
 
 {% comment %}
   Lazy-load Google Maps + markerclusterer.
-  Mobile (≤639px): map is the primary view on initial paint — load immediately.
-  Desktop: list is primary; defer until first user interaction or idle to cut TBT/FCP.
+  List is the primary view on both desktop and mobile; defer the Maps script
+  until first user interaction or idle to cut TBT/FCP.
 {% endcomment %}
 <script>
 (function () {
@@ -167,11 +167,6 @@ metadata: {
     for (var i = 0; i < events.length; i++) {
       window.removeEventListener(events[i], loadMaps);
     }
-  }
-
-  if (window.matchMedia('(max-width: 639px)').matches) {
-    loadMaps();
-    return;
   }
 
   for (var i = 0; i < events.length; i++) {
