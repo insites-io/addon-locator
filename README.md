@@ -177,16 +177,29 @@ The `modules/insites_locator/location` table has **no direct user field**. The l
 
 `views/pages/portal/my-locator-listing.liquid` runs these steps server-side on every request:
 
-1. **Fetch.** `get_my_location` for `user.external_id`.
-2. **Orphan cleanup.** If the join row exists but its joined location is gone (admin deleted the location from the front-end admin UI without removing the join row), call `delete_my_location_custom_fields` to wipe all of the user's join rows, then fall through to step 3.
-3. **First-visit bootstrap.** If the user has no join row, create both rows up-front:
-   - `create_my_location` — new location record with a fresh `uuid`, `status: disabled` (so the listing stays hidden until the user toggles visibility on), and `location_name: user.email`
-   - `create_location_custom_field` — join row linking `user_uuid ↔ location_uuid`
+1. **Fetch user + CRM.** `get_my_user_with_crm` returns the current user joined down through `crm_contact → crm_company → crm_address` in a single round trip, so the bootstrap step below can pre-fill the listing with the user's existing company details. Falls back gracefully when any link in the chain is missing.
+2. **Fetch existing listing.** `get_my_location` for `user.external_id`.
+3. **Orphan cleanup.** If the join row exists but its joined location is gone (admin deleted the location from the front-end admin UI without removing the join row), call `delete_my_location_custom_fields` to wipe all of the user's join rows, then fall through to step 4.
+4. **First-visit bootstrap.** If the user has no join row, delegate to the official module-locator service:
 
-   Then re-fetch so the rest of the page renders the forms in UPDATE mode just like the returning-user path. Without this bootstrap the listing forms would submit in CREATE mode but the join row would never be created — the next page load would still return nil and the save would appear to have vanished.
-4. **Categories.** `get_categories` for the Partner Type dropdown.
-5. **Render.** Page header (with visibility toggle + hidden-listing info banner), then `<ins-tab>` with three `<ins-tab-item>`s.
-6. **Active-tab restore.** After a form submit, the active tab is restored from the flash message (`Listing-Profile` / `Listing-Location` / `Listing-Social`) so the page reopens on the tab the user just saved. Six notyf scripts emit success/error toasts for the six flash states.
+   ```liquid
+   {% function created_location = "locator/controller/locations/create", params: params %}
+   ```
+
+   `locator/controller/locations/create` is the same function the admin "Add location" UI calls. It generates the UUID, validates against the `modules/insites_locator/add_location` form (presence rules + slug uniqueness), runs any platform-level callbacks, and **writes the `location_custom_field` join row in the same call** via the `custom_field.user_uuid` param we pass in.
+
+   The `params` hash seeds the new location from CRM data:
+   - `location_name` — falls back through `crm_company.company_name → crm_company.uuid → user.external_id` so the required-field constraint is always satisfied.
+   - `email`, `phone_number`, `phone_country_code`, `website` — from `crm_company`.
+   - `address_1`, `address_2`, `suburb`, `state`, `postcode`, `country`, `latitude`, `longitude`, etc. — from `crm_company.crm_address` (the default address).
+   - All six social links — from `crm_company`.
+   - `status: 'disabled'` — listing stays hidden until the user toggles visibility on.
+
+   Without this bootstrap the listing forms would submit in CREATE mode but the join row would never be created — the next page load would still return nil and the save would appear to have vanished.
+
+   **Company Name placeholder for the uuid-fallback case.** When `location_name` ends up seeded with a uuid (no CRM company_name), `listing_profile_fields.liquid` detects the uuid shape (36 chars, 5 segments split on `-`) and renders the Company Name input with an empty `value=` so the user sees just the placeholder, not the uuid. The DB value stays as the uuid until the user enters a real name and saves.
+5. **Categories.** `get_categories` for the Partner Type dropdown.
+6. **Render.** Page header (with visibility toggle + hidden-listing info banner), then a single `<ins-tab>` whose tab items inject their fields into one shared `<form>` — see [Unified form](#unified-form) below.
 
 ### Visibility toggle
 
@@ -196,51 +209,70 @@ The `<ins-toggle-switch id="locator-visibility">` in the page header drives publ
 - On `insToggle`, `LocatorPortal.updateVisibility(status)` calls `GET /api/locator/update-visibility?status=enabled|disabled`, which runs `update_listing_status.graphql` and returns `{ ok: true, status }`.
 - The hidden-listing banner (`#locator-visibility-banner`) hides when visibility is on and shows when off.
 
-### Profile tab
+### Unified form
 
-`views/partials/portal/listing_profile_fields.liquid` — the form is rendered by `forms/portal/listing_profile.liquid`, which updates `modules/insites_locator/location`.
+A single `<form>` (`forms/portal/listing.liquid`) wraps the entire `<ins-tab>` UI. Tabs are visual chrome only — each `<ins-tab-item>` includes a field partial whose inputs are children of the shared form. One submit button below the tabs sends everything in one POST.
 
-Fields:
+This replaces an earlier three-form-per-tab structure (one form per tab). The old shape meant edits in one tab were discarded the moment the user clicked save on a different tab.
+
+The form declares **every field** from all three tabs and all the validation rules in its YAML frontmatter, plus the slug-generation `async_callback_actions` that runs after each save. `flash_notice: Success-Listing` / `flash_alert: Error-Listing` drive a pair of notyf scripts on the page.
+
+#### Profile tab
+
+`views/partials/portal/listing_profile_fields.liquid`:
 - Logo `<ins-image-picker>` (120×120) and banner picker (1440×600) — both upload to S3 via the presigned-URL flow (see [Image upload flow](#image-upload-flow) below)
 - Company Name, Email, `<ins-input-tel>` (with hidden mirror inputs for `phone_number` + `phone_country_code`), Website
 - Partner Type `<ins-input-select>` sourced from `categories`
 - Partner Tier (readonly, not yet wired)
 - Short Description `<ins-textarea>` (150-char counter)
 - About Company `<ins-editor>` (HTML, not markdown — matches the admin)
-- Submit button
 
-**Slug generation (async callback).** After a successful save, the form's `async_callback_actions` runs server-side to keep `location.slug` in sync with `location_name`:
+#### Location tab
 
-1. Kebab-case `location_name` to form a base slug.
+`views/partials/portal/listing_location_fields.liquid`:
+- A Google Places `address-lookup` search input (prefix `listing` so app-portal's `address-lookup.js` auto-fills `listing_address_1`, `listing_suburb`, etc.)
+- Hidden `latitude`, `longitude`, and `geojson` inputs (built client-side from lat/lng before submit — see [`validateForm`](#client-side-validateform) below)
+- Address 1, Address 2, Suburb, State, Postcode, Country
+
+#### Social tab
+
+`views/partials/portal/listing_social_fields.liquid` — six URL inputs: Facebook, X, YouTube, LinkedIn, Instagram, Snapchat. The first five use the `url-field` attribute and are normalised to `https://` on submit; Snapchat is plain text (since it's a username, not a URL).
+
+#### Slug generation (async callback)
+
+After every successful save, the form's `async_callback_actions` runs server-side to keep `location.slug` in sync with `location_name`:
+
+1. Hand-strip URL-unfriendly punctuation from `location_name` (`. , ' " ! ? # & @ $ % * + = : ; ( ) [ ] { } < > | ~ ^ \` / \\`), then lowercase, then map spaces / underscores to `-`, then collapse any double-dashes. Liquid has no regex so the strip is a chain of `| replace:` calls — see [`forms/portal/listing.liquid`](modules/locator/public/forms/portal/listing.liquid). Without this step, names like `"Acme Co."` produced slugs like `acme-co.` and the public profile URL hit a 404.
 2. Query `get_location_slugs.graphql` for any slugs starting with that base.
 3. Dedupe against the in-memory haystack (skipping `form.id` so the record's own slug doesn't collide with itself), trying `base`, `base-2`, … `base-100`.
 4. `update_location_slug.graphql` writes the resolved slug back to the record.
 
 The resulting slug is what the public Partner Profile page (`/find-a-partner/{slug}`) resolves on.
 
-### Location tab
+### Tab error state + active-tab persistence
 
-`views/partials/portal/listing_location_fields.liquid` — form rendered by `forms/portal/listing_location.liquid`.
+Both behaviours live in `locator-portal.js` so the field-to-tab mapping has one source of truth — there is no hard-coded field list in Liquid.
 
-- A Google Places `address-lookup` search input (prefix `listing` so app-portal's `address-lookup.js` auto-fills `listing_address_1`, `listing_suburb`, etc.)
-- Hidden `latitude`, `longitude`, and `geojson` inputs (built client-side from lat/lng before submit — see [`validateForm`](#client-side-validateform) below)
-- Address 1, Address 2, Suburb, State, Postcode, Country
+**`markInvalidTabs(formElem)`** — walks each `<ins-tab-item>` and sets `item.hasError = true` if it contains any field with `.is-invalid`. Setting the prop triggers the component's `insTabError` event; the parent `<ins-tab>` listens for that and toggles the `.has-error` class on the matching header (see [ins-tab.tsx:checkForErrors](../insites-components-v2/components/src/components/ins-tab/ins-tab.tsx)). If the currently-active tab is clean but errors live elsewhere, calls `tabEl.activateTab(N)` to surface the first errored tab.
 
-### Social tab
+It runs from two places:
+- **On submit** — after `App.validation.validateForm` has applied `.is-invalid` to empty/invalid required fields, so client-side validation immediately lights up the offending tab(s).
+- **On page load** (300ms after `init`, to let the components hydrate) — picks up server-rendered errors. When PlatformOS re-renders the form after a YAML-rule failure, each errored field carries `<ins-input has-error>`, and the component itself emits `.is-invalid` in light DOM — the same signal client-side validation produces, so the same handler works for both cases.
 
-`views/partials/portal/listing_social_fields.liquid` — form rendered by `forms/portal/listing_social.liquid`.
-
-Six URL inputs: Facebook, X, YouTube, LinkedIn, Instagram, Snapchat. The first five use the `url-field` attribute and are normalised to `https://` on submit; Snapchat is plain text (since it's a username, not a URL).
+**`rememberActiveTab` / `restoreActiveTab`** — persist which tab the user was on across the save → redirect round trip via `sessionStorage['locatorActiveTab']`:
+- `validateForm` calls `rememberActiveTab` immediately before `formElem.submit()`.
+- `init` calls `restoreActiveTab` on page load, which reads the stored label, clears the entry (one-shot), and calls `tabEl.activateTab(N)` to put the user back where they were. Runs *before* `markInvalidTabs`, so if there are errors the error-driven tab switch wins — correct precedence (errors > convenience).
 
 ### Client-side `validateForm`
 
-All three forms share `LocatorPortal.validateForm` (in `locator-portal.js`) as their `html-onsubmit` handler. Before delegating to `App.validation.validateForm`, it:
+`LocatorPortal.validateForm` (in `locator-portal.js`) is the form's `html-onsubmit` handler. Before delegating to `App.validation.validateForm`, it:
 
 1. Bridges `<ins-input-tel>` to its two hidden inputs by calling `getValues()` and writing `phone_number` and `country_code` into them.
 2. Builds the `geojson` Point string from the hidden `latitude` and `longitude` inputs.
-3. Normalises bare URLs by prepending `https://` to any `[url-field]` input that lacks a protocol.
-
-If validation passes, all `<ins-button>` elements are disabled and the submit button is set to `loading=true` before the form submits.
+3. Encodes literal spaces (`' '` → `%20`) in the hidden upload URL inputs (`#locator-logo-url` / `#locator-banner-url`). This rescues legacy records whose image URLs were saved with raw spaces — without it, re-saving such a record would forward an invalid URL to PlatformOS and fail validation.
+4. Normalises bare URLs by prepending `https://` to any `[url-field]` input that lacks a protocol.
+5. Runs `App.validation.validateForm`. If invalid, calls `markInvalidTabs` (so the tab headers light up and the first errored tab is surfaced) and returns false.
+6. If valid: calls `markInvalidTabs` (clears any lingering error indicators from a prior failed submit) + `rememberActiveTab` (sessionStorage), then disables all `<ins-button>`s, sets the submit button to `loading=true`, and submits.
 
 ### Image upload flow
 
@@ -249,10 +281,11 @@ Logo and banner images use the `<ins-image-picker>` component, but the picker on
 1. `GET /api/locator/upload-presign?table=modules/insites_locator/location&property={field}` (where `{field}` is `location_image` for the logo or `image_1` for the banner) returns `{ s3_upload: { direct_upload_url, form_data } }` from the `get_s3_upload.graphql` mutation.
    - **Note** — the request must override the `Accept` header to `application/json` because PlatformOS `format: json` pages only match a single content type (see CLAUDE.md for the full quirk).
 2. `base64ToBlob` converts the picker's data URL to a Blob.
-3. `POST` the blob to S3 as `multipart/form-data` (`form_data` fields + the `file` blob).
-4. Parse the returned XML (`<Location>`), URL-decode it, and write the resulting public URL into the hidden form input for the field (`#locator-logo-url` or `#locator-banner-url`).
+3. **Sanitise the filename** — collapse any whitespace runs to `-` before sending. PlatformOS rejects URLs with literal spaces ("not a valid URL"), so a file picked as `"green 2.jpeg"` is uploaded to S3 as `green-2.jpeg`. Cleaner than relying on percent-encoding and avoids the need to URL-encode anywhere downstream.
+4. `POST` the blob to S3 as `multipart/form-data` (`form_data` fields + the `file` blob).
+5. Parse the returned XML (`<Location>`) and write the URL **verbatim** (without URL-decoding) into the hidden form input for the field (`#locator-logo-url` or `#locator-banner-url`). S3 returns an already-valid percent-encoded URL; decoding it would re-introduce literal spaces and trip the same validator.
 
-On failure, the picker is cleared and a notyf error is shown.
+On failure, the picker is cleared and a notyf error is shown. For legacy records whose URLs were saved with raw spaces before the sanitisation step landed, `validateForm` re-encodes spaces in the hidden URL inputs at submit time — see [Client-side `validateForm`](#client-side-validateform).
 
 ### Key files
 
