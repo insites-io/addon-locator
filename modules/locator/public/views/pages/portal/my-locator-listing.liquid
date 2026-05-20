@@ -171,29 +171,21 @@ authorization_policies:
     <div class="spacer x-large"></div>
   </div>
 
+  {%- comment -%}
+    Active tab on render. Default to Profile. If server-side validation
+    failed and the error lives on a Location-tab field, surface the
+    Location tab so the user can see + fix it without hunting. Profile
+    errors stay on the Profile tab (already the default). Social tab has
+    no required fields so no error switching is needed.
+  {%- endcomment -%}
   {%- liquid
     assign active_tab = 'profile'
-    if context.flash
-      assign flash_msg = context.flash.notice | default: context.flash.alert
-      if flash_msg contains 'Listing-Location'
-        assign active_tab = 'location'
-      elsif flash_msg contains 'Listing-Social'
-        assign active_tab = 'social'
-      endif
+    if form.errors['address_1'] != blank or form.errors['suburb'] != blank or form.errors['state'] != blank or form.errors['postcode'] != blank or form.errors['country'] != blank
+      assign active_tab = 'location'
     endif
   -%}
 
-  <ins-tab>
-    <ins-tab-item label="Profile" {% if active_tab == 'profile' %}active{% endif %}>
-      {%- include_form 'modules/locator/listing_profile', id: location.id, data: location -%}
-    </ins-tab-item>
-    <ins-tab-item label="Location" {% if active_tab == 'location' %}active{% endif %}>
-      {%- include_form 'modules/locator/listing_location', id: location.id, data: location -%}
-    </ins-tab-item>
-    <ins-tab-item label="Social links" {% if active_tab == 'social' %}active{% endif %}>
-      {%- include_form 'modules/locator/listing_social', id: location.id, data: location -%}
-    </ins-tab-item>
-  </ins-tab>
+  {%- include_form 'modules/locator/listing', id: location.id, data: location, active_tab: active_tab -%}
 </div>
 
 {% include 'modules/website/layout/googlemaps' %}
@@ -206,50 +198,18 @@ authorization_policies:
   <script src="{{ 'modules/locator/scripts/locator-portal.min.js' | asset_url }}"></script>
 {%- endif -%}
 
-{%- if context.flash and context.flash.notice == "Success-Listing-Profile" -%}
+{%- if context.flash and context.flash.notice == "Success-Listing" -%}
 <script>
 setTimeout(() => {
-  App.events.notyf('success', "Locator profile has been updated.");
+  App.events.notyf('success', "Listing has been updated.");
 }, 200);
 </script>
 {%- endif -%}
 
-{%- if context.flash and context.flash.alert == "Error-Listing-Profile" -%}
+{%- if context.flash and context.flash.alert == "Error-Listing" -%}
 <script>
 setTimeout(() => {
-  App.events.notyf('error', "Error updating locator profile.");
-}, 200);
-</script>
-{%- endif -%}
-
-{%- if context.flash and context.flash.notice == "Success-Listing-Location" -%}
-<script>
-setTimeout(() => {
-  App.events.notyf('success', "Location has been updated.");
-}, 200);
-</script>
-{%- endif -%}
-
-{%- if context.flash and context.flash.alert == "Error-Listing-Location" -%}
-<script>
-setTimeout(() => {
-  App.events.notyf('error', "Error updating location.");
-}, 200);
-</script>
-{%- endif -%}
-
-{%- if context.flash and context.flash.notice == "Success-Listing-Social" -%}
-<script>
-setTimeout(() => {
-  App.events.notyf('success', "Social links have been updated.");
-}, 200);
-</script>
-{%- endif -%}
-
-{%- if context.flash and context.flash.alert == "Error-Listing-Social" -%}
-<script>
-setTimeout(() => {
-  App.events.notyf('error', "Error updating social links.");
+  App.events.notyf('error', "Error updating listing.");
 }, 200);
 </script>
 {%- endif -%}

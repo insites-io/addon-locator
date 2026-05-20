@@ -15,7 +15,7 @@
 </div>
 
 {% comment %}
-  Company Name — the slug is auto-generated server-side in listing_profile.liquid's async_callback_actions; no slug input is exposed in the form.
+  Company Name — the slug is auto-generated server-side in listing.liquid's async_callback_actions; no slug input is exposed in the form.
 
   On first visit we seed `location_name` from the user's CRM company; when the
   CRM has no company_name we fall back to a uuid (see my-locator-listing.liquid).
@@ -159,17 +159,4 @@
     name="{{ form.fields.properties.long_description.name }}"
     value="{{ data.long_description | escape }}"
   ></ins-editor>
-</div>
-
-{% comment %} Submit {% endcomment %}
-<div class="column-1 text-right">
-  <div class="spacer small"></div>
-  <ins-button
-    label="Update details"
-    icon="icon-check-2"
-    type="submit"
-    solid
-    color="primary"
-    id="listing-profile-save-btn"
-  ></ins-button>
 </div>

@@ -1,12 +1,13 @@
 ---
-name: listing_profile
+name: listing
 resource: modules/insites_locator/location
 resource_owner: anyone
-flash_alert: Error-Listing-Profile
-flash_notice: Success-Listing-Profile
+flash_alert: Error-Listing
+flash_notice: Success-Listing
 redirect_to: my-locator-listing
 fields:
   properties:
+    # Profile tab
     location_name:
       validation:
         presence:
@@ -37,6 +38,38 @@ fields:
     long_description:
     location_image:
     image_1:
+    # Location tab
+    address_1:
+      validation:
+        presence:
+          message: Address 1 is required.
+    address_2:
+    suburb:
+      validation:
+        presence:
+          message: Suburb is required.
+    state:
+      validation:
+        presence:
+          message: State is required.
+    postcode:
+      validation:
+        presence:
+          message: Postcode is required.
+    country:
+      validation:
+        presence:
+          message: Country is required.
+    latitude:
+    longitude:
+    geojson:
+    # Social tab
+    facebook_link:
+    twitter_link:
+    youtube_link:
+    linkedin_link:
+    instagram_link:
+    snapchat_link:
 async_callback_actions:
   delay: 0
   priority: low
@@ -127,18 +160,52 @@ async_callback_actions:
     {%- endif -%}
 ---
 
-<h2 class="heading-2-xxsmall">Profile</h2>
-<div class="spacer x-large"></div>
+{%- comment -%}
+  Single unified form for the entire "My locator listing" page. Replaces the
+  three per-tab forms (listing_profile / listing_location / listing_social)
+  so that the user's edits across all tabs save in one submit. Tabs are
+  visual chrome only — the field partials inject their inputs into this
+  shared form, and one submit button lives below them.
 
+  active_tab is computed by the page so that on server-side validation
+  failure we surface the tab containing the first error.
+{%- endcomment -%}
 {%- form
-    html-id: "listing-profile-form"
+    html-id: "listing-form"
     html-class: "insites-form insites-form-code"
     html-novalidate: true
     html-enctype: "multipart/form-data"
-    html-onsubmit: "return LocatorPortal.validateForm(event);" -%}  
+    html-onsubmit: "return LocatorPortal.validateForm(event);" -%}
 
-  <div class="insites-form-grid">
-    {% include 'modules/locator/portal/listing_profile_fields', data: data %}
+  <ins-tab>
+    <ins-tab-item label="Profile" {% if active_tab == 'profile' %}active{% endif %}>
+      <div class="insites-form-grid">
+        {% include 'modules/locator/portal/listing_profile_fields', data: data %}
+      </div>
+    </ins-tab-item>
+    <ins-tab-item label="Location" {% if active_tab == 'location' %}active{% endif %}>
+      <div class="insites-form-grid">
+        {% include 'modules/locator/portal/listing_location_fields', data: data %}
+      </div>
+    </ins-tab-item>
+    <ins-tab-item label="Social links" {% if active_tab == 'social' %}active{% endif %}>
+      <div class="insites-form-grid">
+        {% include 'modules/locator/portal/listing_social_fields', data: data %}
+      </div>
+    </ins-tab-item>
+  </ins-tab>
+
+  <div class="spacer x-large"></div>
+
+  <div class="text-right">
+    <ins-button
+      label="Update details"
+      icon="icon-check-2"
+      type="submit"
+      solid
+      color="primary"
+      id="listing-save-btn"
+    ></ins-button>
   </div>
 
 {%- endform -%}
