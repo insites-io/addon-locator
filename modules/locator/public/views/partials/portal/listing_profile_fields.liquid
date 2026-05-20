@@ -14,12 +14,27 @@
   ></ins-image-picker>
 </div>
 
-{% comment %} Company Name — the slug is auto-generated server-side in listing_profile.liquid's async_callback_actions; no slug input is exposed in the form. {% endcomment %}
+{% comment %}
+  Company Name — the slug is auto-generated server-side in listing_profile.liquid's async_callback_actions; no slug input is exposed in the form.
+
+  On first visit we seed `location_name` from the user's CRM company; when the
+  CRM has no company_name we fall back to a uuid (see my-locator-listing.liquid).
+  A uuid in the field is ugly and not what the user typed, so blank it out for
+  display — the underlying record value is preserved until the user saves a real
+  name (which Liquid `required` + validation enforces on submit).
+{% endcomment %}
+{%- assign loc_name_parts = data.location_name | split: '-' -%}
+{%- assign loc_name_length = data.location_name | size -%}
+{%- if loc_name_length == 36 and loc_name_parts.size == 5 -%}
+  {%- assign loc_name_display = '' -%}
+{%- else -%}
+  {%- assign loc_name_display = data.location_name -%}
+{%- endif -%}
 <div class="column-2">
   <ins-input
     label="Company Name*"
     name="{{ form.fields.properties.location_name.name }}"
-    value="{{ data.location_name }}"
+    value="{{ loc_name_display }}"
     placeholder="Company Name"
     validate
     required

@@ -18,7 +18,16 @@ authorization_policies:
 #dynamic_cache is not applicable for this page as it contains forms
 ---
 
-{%- graphql user = 'modules/portal/account/get_current_user' | dig: 'current_user' -%}
+{%- comment -%}
+  Fetch user + CRM company + CRM default address in one query so we can
+  pre-fill the location record with the user's existing company details
+  on first visit. Falls back gracefully when any of these relations
+  are missing.
+{%- endcomment -%}
+{%- graphql user = 'modules/locator/account/get_my_user_with_crm' | dig: 'current_user' -%}
+{%- assign crm_contact = user.crm_contact | first -%}
+{%- assign crm_company = crm_contact.crm_company -%}
+{%- assign crm_address = crm_company.crm_address -%}
 {%- graphql location_result = 'modules/locator/locations/get_my_location', user_uuid: user.external_id | dig: 'relation','results' | first -%}
 {%- assign location = location_result | dig: 'location' -%}
 
@@ -55,9 +64,59 @@ authorization_policies:
   returning-user path.
 {%- endcomment -%}
 {%- if location_result.location_uuid == blank -%}
-  {%- assign new_location_uuid = '' | uuid -%}
-  {%- graphql created_location = 'modules/locator/locations/create_my_location', uuid: new_location_uuid, status: 'disabled', location_name: user.email -%}
-  {%- graphql created_cf = 'modules/locator/locations/create_location_custom_field', user_uuid: user.external_id, location_uuid: new_location_uuid -%}
+  {%- comment -%}
+    Seed `location_name` from the user's CRM company. Required by the
+    location schema, so we fall back through:
+      1. crm_company.company_name (preferred — real business name)
+      2. crm_company.uuid          (still unique, less friendly)
+      3. user.external_id          (last-resort guarantee of non-blank)
+  {%- endcomment -%}
+  {%- assign initial_location_name = crm_company.company_name | default: crm_company.uuid | default: user.external_id -%}
+
+  {%- comment -%}
+    Create Location and Location Custom Field user_uuid
+  {%- endcomment -%}
+  {%- parse_json params -%}
+  {
+    "status": "disabled",
+    "location_name": "{{ initial_location_name }}",
+    "email": "{{ crm_company.email_1 }}",
+    "phone_number": "{{ crm_company.mobile_phone_number }}",
+    "phone_country_code": "{{ crm_company.mobile_phone_country_code }}",
+    "website": "{{ crm_company.website }}",
+    "address_1": "{{ crm_address.address_1 }}",
+    "address_2": "{{ crm_address.address_2 }}",
+    "address_3": "{{ crm_address.address_3 }}",
+    "city": "{{ crm_address.city }}",
+    "county": "{{ crm_address.county }}",
+    "district": "{{ crm_address.district }}",
+    "suburb": "{{ crm_address.suburb }}",
+    "state": "{{ crm_address.state }}",
+    "country": "{{ crm_address.country }}",
+    "country_code": "{{ crm_address.country_code }}",
+    "postcode": "{{ crm_address.postcode }}",
+    "latitude": "{{ crm_address.latitude }}",
+    "longitude": "{{ crm_address.longitude }}",
+    "facebook_link": "{{ crm_company.facebook_link }}",
+    "twitter_link": "{{ crm_company.twitter_link }}",
+    "youtube_link": "{{ crm_company.youtube_link }}",
+    "linkedin_link": "{{ crm_company.linkedin_link }}",
+    "instagram_link": "{{ crm_company.instagram_link }}",
+    "snapchat_link": "{{ crm_company.snapchat_link }}",
+    "social_1_link": "{{ crm_company.social_1_link }}",
+    "social_2_link": "{{ crm_company.social_2_link }}",
+    "custom_field.user_uuid": "{{ user.external_id }}"
+  }
+  {%- endparse_json -%}
+
+  {%- comment -%}
+    The controller writes BOTH the location row AND the location_custom_field
+    join row in one call — the `custom_field.user_uuid` entry above is what
+    triggers the join-row insert (location_uuid is auto-added, user_uuid comes
+    from this param). So we don't call create_location_custom_field separately.
+  {%- endcomment -%}
+  {% function created_location = "locator/controller/locations/create", params: params %}
+
   {%- graphql location_result = 'modules/locator/locations/get_my_location', user_uuid: user.external_id | dig: 'relation','results' | first -%}
   {%- assign location = location_result | dig: 'location' -%}
 {%- endif -%}

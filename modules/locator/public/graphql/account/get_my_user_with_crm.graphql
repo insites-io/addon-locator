@@ -1,0 +1,68 @@
+query get_my_user_with_crm {
+  current_user {
+    id
+    first_name
+    last_name
+    name
+    email
+    external_id
+
+    crm_contact: profiles(
+      profile_type: "modules/insites_core/crm_contact"
+    ) {
+      id
+      company_uuid: property(name: "company_uuid")
+      mobile_phone_number: property(name: "mobile_phone_number")
+      mobile_phone_country_code: property(name: "mobile_phone_country_code")
+
+      crm_company: related_record(
+        table: "modules/insites_core/crm_company"
+        join_on_property: "company_uuid"
+        foreign_property: "uuid"
+      ) {
+        uuid: property(name: "uuid")
+        company_name: property(name: "company_name")
+        email_1: property(name: "email_1")
+        website: property(name: "website")
+        mobile_phone_country_code: property(name: "mobile_phone_country_code")
+        mobile_phone_number: property(name: "mobile_phone_number")
+        facebook_link: property(name: "facebook_link")
+        twitter_link: property(name: "twitter_link")
+        youtube_link: property(name: "youtube_link")
+        linkedin_link: property(name: "linkedin_link")
+        instagram_link: property(name: "instagram_link")
+        snapchat_link: property(name: "snapchat_link")
+        social_1_link: property(name: "social_1_link")
+        social_2_link: property(name: "social_2_link")
+        default_address_uuid: property(name: "default_address_uuid")
+
+        crm_address: related_record(
+          table: "modules/insites_core/crm_address"
+          join_on_property: "default_address_uuid"
+          foreign_property: "uuid"
+        ) {
+          address_1: property(name: "address_1")
+          address_2: property(name: "address_2")
+          address_3: property(name: "address_3")
+          city: property(name: "city")
+          county: property(name: "county")
+          district: property(name: "district")
+          suburb: property(name: "suburb")
+          state: property(name: "state")
+          country: property(name: "country")
+          country_code: property(name: "country_code")
+          postcode: property(name: "postcode")
+          latitude: property(name: "latitude")
+          longitude: property(name: "longitude")
+        }
+      }
+    }
+
+    portal: profiles(
+      profile_type: "modules/portal/portal"
+    ) {
+      is_enabled: property_boolean(name: "is_enabled")
+      primary_account_holder: property_boolean(name: "primary_account_holder")
+    }
+  }
+}
