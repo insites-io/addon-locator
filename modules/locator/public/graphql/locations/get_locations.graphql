@@ -11,7 +11,7 @@ query get_locations(
       deleted_at: { exists: false }
       properties: { name: "status", value: "enabled" }
       or: [
-        { properties: [{ name: "city", contains: $location }] }
+        { properties: [{ name: "suburb", contains: $location }] }
         { properties: [{ name: "postcode", contains: $location }] }
         { properties: [{ name: "address_1", contains: $location }] }
       ]
@@ -28,7 +28,8 @@ query get_locations(
       short_description: property(name: "short_description")
       address_1: property(name: "address_1")
       address_2: property(name: "address_2")
-      city: property(name: "city")
+      suburb: property(name: "suburb")
+      state: property(name: "state")
       postcode: property(name: "postcode")
       latitude: property(name: "latitude")
       longitude: property(name: "longitude")

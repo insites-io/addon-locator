@@ -6,18 +6,27 @@ metadata: {
 
 {% assign desc = location.short_description | strip_html | strip %}
 
+{%- comment -%} Build address — strip each part since stored values may have trailing whitespace. {%- endcomment -%}
 {% assign address = '' %}
-{% if location.address_1 %}
-  {% assign address = address | append: location.address_1 %}
+{% assign address_1 = location.address_1 | strip %}
+{% assign address_2 = location.address_2 | strip %}
+{% assign suburb = location.suburb | strip %}
+{% assign state = location.state | strip %}
+{% assign postcode = location.postcode | strip %}
+{% if address_1 != '' %}
+  {% assign address = address_1 %}
 {% endif %}
-{% if location.address_2 %}
-  {% assign address = address | append: ', ' | append: location.address_2 %}
+{% if address_2 != '' %}
+  {% assign address = address | append: ', ' | append: address_2 %}
 {% endif %}
-{% if location.city %}
-  {% assign address = address | append: ' ' | append: location.city %}
+{% if suburb != '' %}
+  {% assign address = address | append: ', ' | append: suburb %}
 {% endif %}
-{% if location.postcode %}
-  {% assign address = address | append: ' ' | append: location.postcode %}
+{% if state != '' %}
+  {% assign address = address | append: ' ' | append: state %}
+{% endif %}
+{% if postcode != '' %}
+  {% assign address = address | append: ' ' | append: postcode %}
 {% endif %}
 
 {% assign phone = '' %}

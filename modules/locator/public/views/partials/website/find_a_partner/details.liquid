@@ -10,19 +10,27 @@ metadata: {
 
 {% if partner %}
 
-  {%- comment -%} Build address {%- endcomment -%}
+  {%- comment -%} Build address — strip each part since stored values may have trailing whitespace. {%- endcomment -%}
   {%- assign address_parts = '' -%}
-  {%- if partner.address_1 and partner.address_1 != '' -%}
-    {%- assign address_parts = partner.address_1 -%}
+  {%- assign address_1 = partner.address_1 | strip -%}
+  {%- assign address_2 = partner.address_2 | strip -%}
+  {%- assign suburb = partner.suburb | strip -%}
+  {%- assign state = partner.state | strip -%}
+  {%- assign postcode = partner.postcode | strip -%}
+  {%- if address_1 != '' -%}
+    {%- assign address_parts = address_1 -%}
   {%- endif -%}
-  {%- if partner.address_2 and partner.address_2 != '' -%}
-    {%- assign address_parts = address_parts | append: ', ' | append: partner.address_2 -%}
+  {%- if address_2 != '' -%}
+    {%- assign address_parts = address_parts | append: ', ' | append: address_2 -%}
   {%- endif -%}
-  {%- if partner.city and partner.city != '' -%}
-    {%- assign address_parts = address_parts | append: ' ' | append: partner.city -%}
+  {%- if suburb != '' -%}
+    {%- assign address_parts = address_parts | append: ', ' | append: suburb -%}
   {%- endif -%}
-  {%- if partner.postcode and partner.postcode != '' -%}
-    {%- assign address_parts = address_parts | append: ' ' | append: partner.postcode -%}
+  {%- if state != '' -%}
+    {%- assign address_parts = address_parts | append: ' ' | append: state -%}
+  {%- endif -%}
+  {%- if postcode != '' -%}
+    {%- assign address_parts = address_parts | append: ' ' | append: postcode -%}
   {%- endif -%}
 
   {%- comment -%} Build phone {%- endcomment -%}

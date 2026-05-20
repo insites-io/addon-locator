@@ -15,7 +15,7 @@ query get_location_detail($slug: String) {
       long_description: property(name: "long_description")
       address_1: property(name: "address_1")
       address_2: property(name: "address_2")
-      city: property(name: "city")
+      suburb: property(name: "suburb")
       state: property(name: "state")
       postcode: property(name: "postcode")
       country: property(name: "country")
