@@ -49,8 +49,11 @@ async_callback_actions:
 
       Steps:
         1. Build a kebab-case `base` from the just-saved location_name.
-           Liquid has no regex, so we collapse spaces / underscores to "-"
-           and lowercase — punctuation is left in (rare in company names).
+           Liquid has no regex, so we hand-strip URL-unfriendly punctuation
+           (full stops, commas, ampersands, quotes, etc. — these otherwise
+           leak into the slug and break /find-a-partner/:slug routing, e.g.
+           "Acme Co." -> "acme-co." -> 404), then map spaces/underscores to
+           "-" and collapse any resulting double-dashes.
         2. Fetch only the rows whose slug starts with `base` (via
            starts_with filter), skip our own row (form.id), and pack the
            rest into a pipe-delimited haystack so `contains` can do
@@ -65,8 +68,42 @@ async_callback_actions:
     {%- if raw_name != '' -%}
       {%- assign base = raw_name
             | downcase
+            | replace: '.', ''
+            | replace: ',', ''
+            | replace: "'", ''
+            | replace: '"', ''
+            | replace: '!', ''
+            | replace: '?', ''
+            | replace: '#', ''
+            | replace: '&', ''
+            | replace: '@', ''
+            | replace: '$', ''
+            | replace: '%', ''
+            | replace: '*', ''
+            | replace: '+', ''
+            | replace: '=', ''
+            | replace: ':', ''
+            | replace: ';', ''
+            | replace: '(', ''
+            | replace: ')', ''
+            | replace: '[', ''
+            | replace: ']', ''
+            | replace: '{', ''
+            | replace: '}', ''
+            | replace: '<', ''
+            | replace: '>', ''
+            | replace: '|', ''
+            | replace: '~', ''
+            | replace: '^', ''
+            | replace: '`', ''
+            | replace: '/', ''
+            | replace: '\', ''
+            | strip
             | replace: '_', '-'
-            | replace: ' ', '-' -%}
+            | replace: ' ', '-'
+            | replace: '--', '-'
+            | replace: '--', '-'
+            | replace: '--', '-' -%}
       {%- if base != '' -%}
         {%- graphql slugs = 'modules/locator/locations/get_location_slugs', slug: base -%}
         {%- assign rows = slugs | dig: 'items','results' -%}
