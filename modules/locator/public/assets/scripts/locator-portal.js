@@ -53,6 +53,23 @@
           );
         });
       }
+
+      // After the page hydrates:
+      //   1. Restore the tab the user saved from (sessionStorage) — keeps
+      //      them where they were instead of bouncing to Profile.
+      //   2. Mirror per-field `.is-invalid` state up to the tab headers
+      //      (server-rendered errors via `<ins-input has-error>` show up
+      //      as `.is-invalid` on hydration).
+      // Order matters: restore first, then errors. If errors exist
+      // markInvalidTabs will switch to the first errored tab, which
+      // overrides the restore — correct precedence (errors > convenience).
+      var listingForm = document.getElementById('listing-form');
+      if (listingForm) {
+        setTimeout(function () {
+          LocatorPortal.restoreActiveTab(listingForm);
+          LocatorPortal.markInvalidTabs(listingForm);
+        }, 300);
+      }
     },
 
     uploadImage: function (base64, filename, property, hiddenInputId, pickerEl) {
@@ -138,13 +155,56 @@
       LocatorPortal.normalizeUrlFields(formElem);
 
       var isValid = await App.validation.validateForm(formElem);
-      if (!isValid) return false;
+      if (!isValid) {
+        LocatorPortal.markInvalidTabs(formElem);
+        return false;
+      }
+
+      // No client-side errors on submit: clear any lingering tab error
+      // indicators (e.g. left over from a prior failed submit on the same
+      // page view).
+      LocatorPortal.markInvalidTabs(formElem);
+
+      // Persist the tab the user is on so we can restore it after the form
+      // redirects back to the page. Without this every save bounces them
+      // back to Profile, even when they were editing Location or Social.
+      LocatorPortal.rememberActiveTab(formElem);
 
       LocatorPortal.disableFormButtons(formElem, true);
       var saveBtn = formElem.querySelector('ins-button[type="submit"]');
       if (saveBtn) saveBtn.loading = true;
       formElem.submit();
       return true;
+    },
+
+    rememberActiveTab: function (formElem) {
+      var items = formElem.querySelectorAll('ins-tab-item');
+      var activeLabel = null;
+      items.forEach(function (item) {
+        if (item.active && item.label) activeLabel = item.label;
+      });
+      if (!activeLabel) return;
+      try { sessionStorage.setItem('locatorActiveTab', activeLabel); } catch (e) {}
+    },
+
+    restoreActiveTab: function (formElem) {
+      var saved = null;
+      try { saved = sessionStorage.getItem('locatorActiveTab'); } catch (e) {}
+      if (!saved) return;
+      // One-shot: clear immediately so a later unrelated reload doesn't
+      // pin the user to an old tab choice.
+      try { sessionStorage.removeItem('locatorActiveTab'); } catch (e) {}
+
+      var tabEl = formElem.querySelector('ins-tab');
+      if (!tabEl || typeof tabEl.activateTab !== 'function') return;
+
+      var items = formElem.querySelectorAll('ins-tab-item');
+      for (var i = 0; i < items.length; i++) {
+        if (items[i].label === saved) {
+          tabEl.activateTab(i + 1); // 1-indexed per ins-tab API
+          return;
+        }
+      }
     },
 
     disableFormButtons: function (formElem, state) {
@@ -160,6 +220,36 @@
           input.value = 'https://' + value;
         }
       });
+    },
+
+    // Mirror per-field `.is-invalid` state up to the <ins-tab-item> headers so the
+    // user can tell at a glance which tab has a validation failure. Setting
+    // `item.hasError` triggers the component's insTabError event; the parent
+    // <ins-tab> listens for that and toggles the `.has-error` class on the
+    // matching header (see ins-tab.tsx:checkForErrors).
+    //
+    // If the user is currently looking at a tab with no errors but errors
+    // live on another tab, switch to the first tab that has them — otherwise
+    // the failure would be invisible behind the active tab pane.
+    markInvalidTabs: function (formElem) {
+      var tabItems = formElem.querySelectorAll('ins-tab-item');
+      var firstInvalidIndex = -1;
+      tabItems.forEach(function (item, idx) {
+        var hasInvalid = !!item.querySelector('.is-invalid');
+        item.hasError = hasInvalid;
+        if (hasInvalid && firstInvalidIndex === -1) firstInvalidIndex = idx;
+      });
+
+      if (firstInvalidIndex < 0) return;
+
+      var activeNow = formElem.querySelector('ins-tab-item[active]');
+      var activeHasError = activeNow && activeNow.querySelector('.is-invalid');
+      if (activeHasError) return;
+
+      var tabEl = formElem.querySelector('ins-tab');
+      if (tabEl && typeof tabEl.activateTab === 'function') {
+        tabEl.activateTab(firstInvalidIndex + 1);
+      }
     },
 
     // Older records may have logo/banner URLs that were saved with raw spaces

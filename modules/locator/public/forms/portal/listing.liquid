@@ -167,8 +167,12 @@ async_callback_actions:
   visual chrome only — the field partials inject their inputs into this
   shared form, and one submit button lives below them.
 
-  active_tab is computed by the page so that on server-side validation
-  failure we surface the tab containing the first error.
+  Tab-level `has-error` and active-tab switching are driven by
+  LocatorPortal.markInvalidTabs (locator-portal.js), which runs both on page
+  load (to catch server-rendered errors via `<ins-input has-error>` →
+  `.is-invalid`) and on every submit (to catch client-side empty-field
+  validation). Keeping that logic in JS means the field-to-tab mapping
+  lives in exactly one place.
 {%- endcomment -%}
 {%- form
     html-id: "listing-form"
@@ -178,17 +182,17 @@ async_callback_actions:
     html-onsubmit: "return LocatorPortal.validateForm(event);" -%}
 
   <ins-tab>
-    <ins-tab-item label="Profile" {% if active_tab == 'profile' %}active{% endif %}>
+    <ins-tab-item label="Profile" active>
       <div class="insites-form-grid">
         {% include 'modules/locator/portal/listing_profile_fields', data: data %}
       </div>
     </ins-tab-item>
-    <ins-tab-item label="Location" {% if active_tab == 'location' %}active{% endif %}>
+    <ins-tab-item label="Location">
       <div class="insites-form-grid">
         {% include 'modules/locator/portal/listing_location_fields', data: data %}
       </div>
     </ins-tab-item>
-    <ins-tab-item label="Social links" {% if active_tab == 'social' %}active{% endif %}>
+    <ins-tab-item label="Social links">
       <div class="insites-form-grid">
         {% include 'modules/locator/portal/listing_social_fields', data: data %}
       </div>

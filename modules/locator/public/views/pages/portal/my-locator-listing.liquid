@@ -171,21 +171,7 @@ authorization_policies:
     <div class="spacer x-large"></div>
   </div>
 
-  {%- comment -%}
-    Active tab on render. Default to Profile. If server-side validation
-    failed and the error lives on a Location-tab field, surface the
-    Location tab so the user can see + fix it without hunting. Profile
-    errors stay on the Profile tab (already the default). Social tab has
-    no required fields so no error switching is needed.
-  {%- endcomment -%}
-  {%- liquid
-    assign active_tab = 'profile'
-    if form.errors['address_1'] != blank or form.errors['suburb'] != blank or form.errors['state'] != blank or form.errors['postcode'] != blank or form.errors['country'] != blank
-      assign active_tab = 'location'
-    endif
-  -%}
-
-  {%- include_form 'modules/locator/listing', id: location.id, data: location, active_tab: active_tab -%}
+  {%- include_form 'modules/locator/listing', id: location.id, data: location -%}
 </div>
 
 {% include 'modules/website/layout/googlemaps' %}
