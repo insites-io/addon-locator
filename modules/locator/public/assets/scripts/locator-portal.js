@@ -73,7 +73,13 @@
         });
 
         var blob = LocatorPortal.base64ToBlob(base64);
-        formData.append('file', blob, filename);
+        // Sanitize the filename before uploading. Spaces in S3 object keys end up
+        // as literal spaces in the returned URL, which fails the backend's "valid
+        // URL" check on save (PlatformOS rejects `https://…/green 2.jpeg`).
+        // Replacing whitespace runs with a dash keeps the filename readable and
+        // the resulting URL safe.
+        var safeFilename = (filename || '').replace(/\s+/g, '-');
+        formData.append('file', blob, safeFilename);
 
         return axios.post(uploadData.direct_upload_url, formData);
       }).then(function (response) {
@@ -81,7 +87,11 @@
         var xml = parser.parseFromString(response.data, 'text/xml');
         var locationEl = xml.getElementsByTagName('Location')[0];
         if (locationEl && hiddenInput) {
-          hiddenInput.value = decodeURIComponent(locationEl.textContent);
+          // S3 returns the upload URL already percent-encoded (e.g. "green%202.jpeg").
+          // Don't decode it — the backend stores this verbatim as the property upload
+          // URL, and a decoded value with raw spaces fails the URL validation check
+          // ("tried to store … which is not a valid URL").
+          hiddenInput.value = locationEl.textContent;
         }
       }).catch(function (error) {
         if (pickerEl) pickerEl.value = '';
@@ -124,6 +134,7 @@
         });
       }
 
+      LocatorPortal.normalizeUploadUrls(formElem);
       LocatorPortal.normalizeUrlFields(formElem);
 
       var isValid = await App.validation.validateForm(formElem);
@@ -147,6 +158,21 @@
         var value = (input.value || '').trim();
         if (value && !/^https?:\/\//i.test(value)) {
           input.value = 'https://' + value;
+        }
+      });
+    },
+
+    // Older records may have logo/banner URLs that were saved with raw spaces
+    // (e.g. `…/green 2.jpeg`). Re-saving the form would forward that invalid
+    // URL to the backend and trip its URL validator. Percent-encode any spaces
+    // here so the submission carries a valid URL even when no new upload
+    // happens this session.
+    normalizeUploadUrls: function (formElem) {
+      var ids = ['locator-logo-url', 'locator-banner-url'];
+      ids.forEach(function (id) {
+        var input = formElem.querySelector('#' + id);
+        if (input && input.value && / /.test(input.value)) {
+          input.value = input.value.replace(/ /g, '%20');
         }
       });
     },
