@@ -140,9 +140,11 @@ async_callback_actions:
       {%- if base != '' -%}
         {%- graphql slugs = 'modules/locator/locations/get_location_slugs', slug: base -%}
         {%- assign rows = slugs | dig: 'items','results' -%}
+        {%- assign current_id = form.id | append: '' -%}
         {%- assign haystack = '' -%}
         {%- for row in rows -%}
-          {%- unless row.id == form.id or row.slug == blank -%}
+          {%- assign row_id = row.id | append: '' -%}
+          {%- unless row_id == current_id or row.slug == blank -%}
             {%- assign haystack = haystack | append: '|' | append: row.slug | append: '|' -%}
           {%- endunless -%}
         {%- endfor -%}
