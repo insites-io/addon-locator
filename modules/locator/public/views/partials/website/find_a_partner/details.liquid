@@ -46,12 +46,12 @@ metadata: {
   {%- comment -%} Strip HTML from short description for inline use {%- endcomment -%}
   {%- assign tagline = partner.short_description | strip_html | strip -%}
 
-  {%- comment -%} Slugs seeded by /migrations/20260525012058_locations.liquid — their logos ship as static assets in /assets/images. {%- endcomment -%}
+  {%- comment -%} Slugs seeded by /migrations/20260525012058_locations.liquid — their logos ship as static assets in /assets/images. Uploaded location_image takes precedence. {%- endcomment -%}
   {%- assign seeded_logo_slugs = 'harbour-city-partners,blue-bay-digital,top-end-tech,cummin-consulting,surf-coast-studios,brooklyn-simmons,bellarine-brands,outback-web-solutions,quokka-creative,wombat-marketing,tasman-digital,capital-e-commerce,fremantle-founders,red-dirt-agencies,nextgen-consultants-agency,steel-city-digital,kangaroo-commerce' | split: ',' -%}
-  {%- if seeded_logo_slugs contains partner.slug -%}
-    {%- assign logo_url = 'modules/locator/images/' | append: partner.slug | append: '.png' | asset_url -%}
-  {%- else -%}
+  {%- if partner.location_image.url and partner.location_image.url != blank -%}
     {%- assign logo_url = partner.location_image.url -%}
+  {%- elsif seeded_logo_slugs contains partner.slug -%}
+    {%- assign logo_url = 'modules/locator/images/' | append: partner.slug | append: '.png' | asset_url -%}
   {%- endif -%}
 
   {%- comment -%} Banner — LCP candidate, prioritise fetch and provide dimensions to reserve space. {%- endcomment -%}
