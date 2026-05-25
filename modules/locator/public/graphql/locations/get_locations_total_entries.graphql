@@ -1,0 +1,24 @@
+query get_locations_total_entries(
+  $page: Int = 1,
+  $size: Int = 30,
+  $location: String = ""
+) {
+  items: records(
+    page: $page
+    per_page: $size
+    filter: {
+      table: { value: "modules/insites_locator/location" }
+      deleted_at: { exists: false }
+      properties: { name: "status", value: "enabled" }
+      or: [
+        { properties: [{ name: "suburb", contains: $location }] }
+        { properties: [{ name: "postcode", contains: $location }] }
+        { properties: [{ name: "address_1", contains: $location }] }
+      ]
+    }
+  ) {
+    total_entries
+    total_pages
+    current_page
+  }
+}

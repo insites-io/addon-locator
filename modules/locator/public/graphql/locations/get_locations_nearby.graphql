@@ -19,9 +19,6 @@ query get_locations_nearby(
       created_at: { order: DESC }
     }
   ) {
-    total_entries
-    total_pages
-    current_page
     results {
       id
       location_name: property(name: "location_name")

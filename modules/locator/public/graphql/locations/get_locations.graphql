@@ -20,7 +20,6 @@ query get_locations(
       updated_at: { order: DESC }
     }
   ) {
-    total_entries
     results {
       id
       location_name: property(name: "location_name")

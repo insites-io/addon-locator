@@ -22,12 +22,15 @@ metadata: {
 {%- if lat_q != blank and lng_q != blank and distance_q != blank -%}
   {%- assign point_json = '{"type":"Point","coordinates":[' | append: lng_q | append: ',' | append: lat_q | append: ']}' -%}
   {%- assign point = point_json | parse_json -%}
-  {%- assign distance_int = distance_q | plus: 0 -%}  
-  {%- graphql data = "modules/locator/locations/get_locations_nearby", point: point, distance: distance_int, page: page_q -%}
+  {%- assign distance_int = distance_q | plus: 0 -%}
+  {%- graphql data  = "modules/locator/locations/get_locations_nearby", point: point, distance: distance_int, page: page_q -%}
+  {%- graphql count = "modules/locator/locations/get_locations_nearby_total_entries", point: point, distance: distance_int, page: page_q -%}
 {%- elsif location_q != blank -%}
-  {%- graphql data = "modules/locator/locations/get_locations", location: location_q -%}
+  {%- graphql data  = "modules/locator/locations/get_locations", location: location_q -%}
+  {%- graphql count = "modules/locator/locations/get_locations_total_entries", location: location_q -%}
 {%- else -%}
-  {%- graphql data = "modules/locator/locations/get_locations" -%}
+  {%- graphql data  = "modules/locator/locations/get_locations" -%}
+  {%- graphql count = "modules/locator/locations/get_locations_total_entries" -%}
 {%- endif -%}
 
 {%- capture cards_html -%}
@@ -38,7 +41,7 @@ metadata: {
 
 {%- assign response = '{}' | parse_json -%}
 {%- assign response = response | add_hash_key: 'html',         cards_html -%}
-{%- assign response = response | add_hash_key: 'total',        data.items.total_entries -%}
-{%- assign response = response | add_hash_key: 'total_pages',  data.items.total_pages -%}
-{%- assign response = response | add_hash_key: 'current_page', data.items.current_page -%}
+{%- assign response = response | add_hash_key: 'total',        count.items.total_entries -%}
+{%- assign response = response | add_hash_key: 'total_pages',  count.items.total_pages -%}
+{%- assign response = response | add_hash_key: 'current_page', count.items.current_page -%}
 {{ response | json }}

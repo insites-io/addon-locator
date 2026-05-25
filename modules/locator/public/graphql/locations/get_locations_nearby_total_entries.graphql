@@ -1,0 +1,23 @@
+query get_locations_nearby_total_entries(
+  $page: Int = 1,
+  $size: Int = 10,
+  $point: GeometryJSON!,
+  $distance: Int!
+) {
+  items: records(
+    page: $page
+    per_page: $size
+    filter: {
+      table: { value: "modules/insites_locator/location" }
+      deleted_at: { exists: false }
+      properties: [
+        { name: "status", value: "enabled" }
+        { name: "geojson", distance_sphere: { center: $point, distance_in_km: $distance } }
+      ]
+    }
+  ) {
+    total_entries
+    total_pages
+    current_page
+  }
+}

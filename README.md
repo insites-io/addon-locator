@@ -122,7 +122,9 @@ When the user selects from the autocomplete dropdown, the lat/lng comes directly
 | `views/partials/website/find_a_partner/card.liquid` | Single result card (rendered by both SSR and AJAX) |
 | `views/pages/api/find-a-partner.liquid` | AJAX JSON endpoint |
 | `graphql/locations/get_locations.graphql` | Initial SSR query (up to 30 results) |
+| `graphql/locations/get_locations_total_entries.graphql` | Count-only companion to `get_locations` (results + count are split) |
 | `graphql/locations/get_locations_nearby.graphql` | Geo-distance search query |
+| `graphql/locations/get_locations_nearby_total_entries.graphql` | Count-only companion to `get_locations_nearby` |
 | `assets/scripts/locator.js` | All client-side directory logic |
 | `assets/styles/locator.css` | All locator styles (both website and portal) |
 
@@ -333,8 +335,10 @@ All endpoints are PlatformOS pages with `format: json`.
 |---|---|
 | `delete_my_location_custom_fields.graphql` | `records_delete_all` join rows for a `user_uuid` (orphan cleanup) |
 | `get_my_location.graphql` | Fetches the current user's join row + `related_record` to the full location |
-| `get_locations.graphql` | Paged list of enabled locations, optional `location` text matches city / postcode / address_1, sorted by `updated_at DESC` |
-| `get_locations_nearby.graphql` | Paged geo-radius search via `distance_sphere` on the `geojson` property, requires `status=enabled` |
+| `get_locations.graphql` | Paged list of enabled locations, optional `location` text matches city / postcode / address_1, sorted by `updated_at DESC`. **Returns `results` only** — pair with `get_locations_total_entries` for counts. |
+| `get_locations_total_entries.graphql` | Same filter as `get_locations`, returns only `total_entries` / `total_pages` / `current_page`. Split per PlatformOS guidance: the runtime issues a separate COUNT statement when `total_entries` is requested anyway, so isolating it lets the results query skip projection/joins it doesn't need. |
+| `get_locations_nearby.graphql` | Paged geo-radius search via `distance_sphere` on the `geojson` property, requires `status=enabled`. **Returns `results` only** — pair with `get_locations_nearby_total_entries`. |
+| `get_locations_nearby_total_entries.graphql` | Count-only companion to `get_locations_nearby`. |
 | `get_location_detail.graphql` | Single location lookup by `slug`, returns all public profile fields + `related_record` category |
 | `get_location_slugs.graphql` | All slugs starting with a prefix (per_page 100), used by the slug-generation callback |
 | `update_listing_status.graphql` | `record_update` only the `status` field |
