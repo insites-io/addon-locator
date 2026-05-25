@@ -217,7 +217,7 @@ An outlined **"Preview my listing"** button (`#locator-preview-link`) sits besid
 
 ### Unified form
 
-A single `<form>` (`forms/portal/listing.liquid`) wraps the entire `<ins-tab>` UI. Tabs are visual chrome only — each `<ins-tab-item>` includes a field partial whose inputs are children of the shared form. One submit button below the tabs sends everything in one POST.
+A single `<form>` (`forms/locator_listing.liquid`) wraps the entire `<ins-tab>` UI. Tabs are visual chrome only — each `<ins-tab-item>` includes a field partial whose inputs are children of the shared form. One submit button below the tabs sends everything in one POST.
 
 This replaces an earlier three-form-per-tab structure (one form per tab). The old shape meant edits in one tab were discarded the moment the user clicked save on a different tab.
 
@@ -248,7 +248,7 @@ The form declares **every field** from all three tabs and all the validation rul
 
 After every successful save, the form's `async_callback_actions` runs server-side to keep `location.slug` in sync with `location_name`:
 
-1. Hand-strip URL-unfriendly punctuation from `location_name` (`. , ' " ! ? # & @ $ % * + = : ; ( ) [ ] { } < > | ~ ^ \` / \\`), then lowercase, then map spaces / underscores to `-`, then collapse any double-dashes. Liquid has no regex so the strip is a chain of `| replace:` calls — see [`forms/portal/listing.liquid`](modules/locator/public/forms/portal/listing.liquid). Without this step, names like `"Acme Co."` produced slugs like `acme-co.` and the public profile URL hit a 404.
+1. Hand-strip URL-unfriendly punctuation from `location_name` (`. , ' " ! ? # & @ $ % * + = : ; ( ) [ ] { } < > | ~ ^ \` / \\`), then lowercase, then map spaces / underscores to `-`, then collapse any double-dashes. Liquid has no regex so the strip is a chain of `| replace:` calls — see [`forms/locator_listing.liquid`](modules/locator/public/forms/locator_listing.liquid). Without this step, names like `"Acme Co."` produced slugs like `acme-co.` and the public profile URL hit a 404.
 2. Query `get_location_slugs.graphql` for any slugs starting with that base.
 3. Dedupe against the in-memory haystack (skipping `form.id` so the record's own slug doesn't collide with itself), trying `base`, `base-2`, … `base-100`.
 4. `update_location_slug.graphql` writes the resolved slug back to the record.
@@ -298,7 +298,7 @@ On failure, the picker is cleared and a notyf error is shown. For legacy records
 | File | Purpose |
 |---|---|
 | `views/pages/portal/my-locator-listing.liquid` | Page entry — CRM fetch / location fetch / orphan cleanup / first-visit bootstrap / one `include_form` call |
-| `forms/portal/listing.liquid` | The single unified form — declares every field, all validation rules, the slug-generation `async_callback_actions`, and the `<ins-tab>` markup that wraps the three field partials |
+| `forms/locator_listing.liquid` | The single unified form — declares every field, all validation rules, the slug-generation `async_callback_actions`, and the `<ins-tab>` markup that wraps the three field partials |
 | `views/partials/portal/listing_profile_fields.liquid` | Profile tab fields (no submit button) |
 | `views/partials/portal/listing_location_fields.liquid` | Location tab fields (no submit button) |
 | `views/partials/portal/listing_social_fields.liquid` | Social tab fields (no submit button) |
@@ -366,8 +366,8 @@ modules/locator/public/
 │   │   └── locator-portal.js   # Portal listing form: validation, image upload, visibility, tab error + persistence
 │   └── styles/
 │       └── locator.css         # All locator styles (website + portal)
-├── forms/portal/
-│   └── listing.liquid          # Single unified form — all fields, validation, slug callback, tabs, submit button
+├── forms/
+│   └── locator_listing.liquid  # Single unified form — all fields, validation, slug callback, tabs, submit button
 ├── graphql/
 │   ├── account/
 │   │   └── get_my_user_with_crm.graphql
