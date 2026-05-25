@@ -46,6 +46,14 @@ metadata: {
   {%- comment -%} Strip HTML from short description for inline use {%- endcomment -%}
   {%- assign tagline = partner.short_description | strip_html | strip -%}
 
+  {%- comment -%} Slugs seeded by /migrations/20260525012058_locations.liquid — their logos ship as static assets in /assets/images. {%- endcomment -%}
+  {%- assign seeded_logo_slugs = 'harbour-city-partners,blue-bay-digital,top-end-tech,cummin-consulting,surf-coast-studios,brooklyn-simmons,bellarine-brands,outback-web-solutions,quokka-creative,wombat-marketing,tasman-digital,capital-e-commerce,fremantle-founders,red-dirt-agencies,nextgen-consultants-agency,steel-city-digital,kangaroo-commerce' | split: ',' -%}
+  {%- if seeded_logo_slugs contains partner.slug -%}
+    {%- assign logo_url = 'modules/locator/images/' | append: partner.slug | append: '.png' | asset_url -%}
+  {%- else -%}
+    {%- assign logo_url = partner.location_image.url -%}
+  {%- endif -%}
+
   {%- comment -%} Banner — LCP candidate, prioritise fetch and provide dimensions to reserve space. {%- endcomment -%}
   <div class="locator-profile-banner{% unless partner.image_1.url %} no-banner{% endunless %}">
     {%- if partner.image_1.url -%}
@@ -61,8 +69,8 @@ metadata: {
 
         <div class="locator-profile-logo-col">
           <div class="locator-profile-logo">
-            {%- if partner.location_image.url -%}
-              <img src="{{ partner.location_image.url | replace: ' ', '%20' }}" alt="{{ partner.location_name | escape }}" width="97" height="97" decoding="async">
+            {%- if logo_url != blank -%}
+              <img src="{{ logo_url | replace: ' ', '%20' }}" alt="{{ partner.location_name | escape }}" width="97" height="97" decoding="async">
             {%- else -%}
               {%- include 'modules/website/layout/placeholder_image' -%}
             {%- endif -%}

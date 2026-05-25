@@ -42,6 +42,14 @@ metadata: {
   {% assign category_name = location.category.name %}
 {% endif %}
 
+{%- comment -%} Slugs seeded by /migrations/20260525012058_locations.liquid — their logos ship as static assets in /assets/images. {%- endcomment -%}
+{% assign seeded_logo_slugs = 'harbour-city-partners,blue-bay-digital,top-end-tech,cummin-consulting,surf-coast-studios,brooklyn-simmons,bellarine-brands,outback-web-solutions,quokka-creative,wombat-marketing,tasman-digital,capital-e-commerce,fremantle-founders,red-dirt-agencies,nextgen-consultants-agency,steel-city-digital,kangaroo-commerce' | split: ',' %}
+{% if seeded_logo_slugs contains location.slug %}
+  {% assign logo_url = 'modules/locator/images/' | append: location.slug | append: '.png' | asset_url %}
+{% else %}
+  {% assign logo_url = location.location_image.url %}
+{% endif %}
+
 <a href="/find-a-partner/{{ location.slug }}" class="locator-card"
    data-lat="{{ location.latitude }}" data-lng="{{ location.longitude }}"
    data-name="{{ location.location_name | escape }}"
@@ -49,11 +57,11 @@ metadata: {
    data-desc="{{ desc | escape }}"
    data-address="{{ address | escape }}"
    data-phone="{{ phone | escape }}"
-   data-logo="{{ location.location_image.url | replace: ' ', '%20' | escape }}"
+   data-logo="{{ logo_url | replace: ' ', '%20' | escape }}"
    {% if location.category %}data-tag="{{ location.category.slug }}" data-tag-label="{{ location.category.name | escape }}"{% endif %}>
   <div class="locator-card__logo">
-    {% if location.location_image.url %}
-      <img src="{{ location.location_image.url | replace: ' ', '%20' }}" alt="{{ location.location_name | escape }}" width="96" height="96" loading="lazy" decoding="async">
+    {% if logo_url != blank %}
+      <img src="{{ logo_url | replace: ' ', '%20' }}" alt="{{ location.location_name | escape }}" width="96" height="96" loading="lazy" decoding="async">
     {% else %}
       {%- include 'modules/website/layout/placeholder_image' -%}
     {% endif %}

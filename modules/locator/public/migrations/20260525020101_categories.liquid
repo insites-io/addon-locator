@@ -1,0 +1,41 @@
+{% comment %} Import Categories {% endcomment %}
+{% parse_json import_categories %}
+[
+  {
+    "type_name": "modules/insites_locator/category",
+    "properties": {
+      "slug": "implementation",
+      "uuid": "3e226f25-a89a-47da-ace4-1234f634f1ab",
+      "status": "enabled",
+      "category_name": "Implementation",
+      "category_image": {},
+      "open_graph_image": {},
+      "is_visible_to_search_engines": true
+    }
+  },
+  {
+    "type_name": "modules/insites_locator/category",
+    "properties": {
+      "slug": "referral",
+      "uuid": "0ebe72b8-722f-4fd9-82cc-81a36791231e",
+      "status": "enabled",
+      "category_name": "Referral",
+      "category_image": {},
+      "open_graph_image": {},
+      "is_visible_to_search_engines": true
+    }
+  }
+]
+{% endparse_json %}
+
+{%- graphql results, models: import_categories -%}
+  mutation ($models: [CustomizationImport!]!) {
+    import_models(
+      models: $models
+    ) {
+      ids
+    }
+  }
+{%- endgraphql -%}
+
+{% log results, type: "MIGRATION: categories" %}
