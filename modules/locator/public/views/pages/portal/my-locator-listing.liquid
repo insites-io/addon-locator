@@ -113,7 +113,7 @@ authorization_policies:
     The controller writes BOTH the location row AND the location_custom_field
     join row in one call — the `custom_field.user_uuid` entry above is what
     triggers the join-row insert (location_uuid is auto-added, user_uuid comes
-    from this param). So we don't call create_location_custom_field separately.
+    from this param).
   {%- endcomment -%}
   {% function created_location = "locator/controller/locations/create", params: params %}
 

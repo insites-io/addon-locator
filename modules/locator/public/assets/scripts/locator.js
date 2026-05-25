@@ -752,9 +752,8 @@
   var filtersBtn = document.getElementById('locator-filters-btn');
   var filtersDrawer = null;
 
-  // Drawer markup mirrors partials/website/find_a_partner/filters_drawer.liquid.
-  // Kept inline so we can defer the <ins-drawer> custom-element upgrade until
-  // the user actually opens the filters panel.
+  // Drawer markup kept inline so we can defer the <ins-drawer> custom-element
+  // upgrade until the user actually opens the filters panel.
   function ensureFiltersDrawer() {
     if (filtersDrawer) { return filtersDrawer; }
     var html =
