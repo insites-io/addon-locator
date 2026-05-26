@@ -178,7 +178,7 @@ The `modules/insites_locator/location` table has **no direct user field**. The l
 
 `views/pages/portal/my-locator-listing.liquid` runs these steps server-side on every request:
 
-1. **Fetch user + CRM.** `get_my_user_with_crm` returns the current user joined down through `crm_contact → crm_company → crm_address` in a single round trip, so the bootstrap step below can pre-fill the listing with the user's existing company details. Falls back gracefully when any link in the chain is missing.
+1. **Fetch user + CRM.** `get_current_user_with_crm` returns the current user joined down through `crm_contact → crm_company → crm_address` in a single round trip, so the bootstrap step below can pre-fill the listing with the user's existing company details. Falls back gracefully when any link in the chain is missing.
 2. **Fetch existing listing.** `get_my_location` for `user.external_id`.
 3. **Orphan cleanup.** If the join row exists but its joined location is gone (admin deleted the location from the front-end admin UI without removing the join row), call `delete_my_location_custom_fields` to wipe all of the user's join rows, then fall through to step 4.
 4. **First-visit bootstrap.** If the user has no join row, delegate to the official module-locator service:
@@ -304,7 +304,7 @@ On failure, the picker is cleared and a notyf error is shown. For legacy records
 | `views/partials/portal/listing_profile_fields.liquid` | Profile tab fields (no submit button) |
 | `views/partials/portal/listing_location_fields.liquid` | Location tab fields (no submit button) |
 | `views/partials/portal/listing_social_fields.liquid` | Social tab fields (no submit button) |
-| `graphql/account/get_my_user_with_crm.graphql` | Joins current user → `crm_contact` → `crm_company` → `crm_address` in one query for first-visit prefill |
+| `graphql/account/get_current_user_with_crm.graphql` | Joins current user → `crm_contact` → `crm_company` → `crm_address` in one query for first-visit prefill |
 | `assets/scripts/locator-portal.js` | `LocatorPortal` IIFE — validateForm, uploadImage (filename sanitisation), updateVisibility, normalizeUrlFields, normalizeUploadUrls, markInvalidTabs, rememberActiveTab / restoreActiveTab |
 
 ---
@@ -327,7 +327,7 @@ All endpoints are PlatformOS pages with `format: json`.
 
 | Query | Purpose |
 |---|---|
-| `get_my_user_with_crm.graphql` | Joins `current_user → crm_contact → crm_company → crm_address` in one round trip. Used by the first-visit bootstrap to pre-fill the new location with the user's existing company name, address, contact, and social links. |
+| `get_current_user_with_crm.graphql` | Joins `current_user → crm_contact → crm_company → crm_address` in one round trip. Used by the first-visit bootstrap to pre-fill the new location with the user's existing company name, address, contact, and social links. |
 
 ### `locations/`
 
@@ -374,7 +374,7 @@ modules/locator/public/
 │   └── locator_listing.liquid  # Single unified form — all fields, validation, slug callback, tabs, submit button
 ├── graphql/
 │   ├── account/
-│   │   └── get_my_user_with_crm.graphql
+│   │   └── get_current_user_with_crm.graphql
 │   ├── categories/
 │   ├── locations/
 │   └── system/

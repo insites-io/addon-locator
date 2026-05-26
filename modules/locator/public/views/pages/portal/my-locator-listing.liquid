@@ -24,7 +24,7 @@ authorization_policies:
   on first visit. Falls back gracefully when any of these relations
   are missing.
 {%- endcomment -%}
-{%- graphql user = 'modules/locator/account/get_my_user_with_crm' | dig: 'current_user' -%}
+{%- graphql user = 'modules/locator/account/get_current_user_with_crm' | dig: 'current_user' -%}
 {%- assign crm_contact = user.crm_contact | first -%}
 {%- assign crm_company = crm_contact.crm_company -%}
 {%- assign crm_address = crm_company.crm_address -%}

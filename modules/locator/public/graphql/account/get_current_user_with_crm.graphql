@@ -1,4 +1,4 @@
-query get_my_user_with_crm {
+query get_current_user_with_crm {
   current_user {
     id
     first_name
@@ -56,13 +56,6 @@ query get_my_user_with_crm {
           longitude: property(name: "longitude")
         }
       }
-    }
-
-    portal: profiles(
-      profile_type: "modules/portal/portal"
-    ) {
-      is_enabled: property_boolean(name: "is_enabled")
-      primary_account_holder: property_boolean(name: "primary_account_holder")
     }
   }
 }
