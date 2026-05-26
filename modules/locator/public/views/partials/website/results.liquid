@@ -57,7 +57,7 @@ metadata: {
                data-ssr-total-pages="{{ count.items.total_pages | default: 1 }}">
 
             {% for location in data.items.results %}
-              {% include 'modules/locator/website/find_a_partner/card' %}
+              {% include 'modules/locator/website/card' %}
             {% endfor %}
 
           </div>
