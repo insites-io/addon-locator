@@ -17,7 +17,7 @@ The add-on is gated behind the `locator_addon` constant — app-portal layouts r
 | Migration | Purpose |
 |---|---|
 | `20260507000007_location_custom_field.liquid` | `admin_table_update` to add `user_uuid` (belongs_to users) to the `modules/ins_locator/location_custom_field` table — this is what makes the user ↔ location join work |
-| `20260513070054_constants.liquid` | Sets `locator_addon = true` (feature flag the app-portal layouts read) and `google_map_id = d55c604835e6ff00d4f4a0c0` (Map ID used by the `googlemaps` partial) |
+| `20260513070054_constants.liquid` | Sets `locator_addon = true` (feature flag the app-portal layouts read) and `google_map_id = ''` (Map ID used by the `googlemaps` partial) |
 
 ---
 
