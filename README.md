@@ -6,7 +6,7 @@ This add-on is layered on top of an [app-portal](../app-portal/) deployment. It 
 - **`/find-a-partner/{slug}`** — public partner profile page (rendered by the same page via `max_deep_level: 2`)
 - **`/my-locator-listing`** — portal page where logged-in users manage their public listing across Profile / Location / Social tabs
 - Three JSON API endpoints (`find-a-partner`, `update-visibility`, `upload-presign`)
-- Two migrations (`location_custom_field.user_uuid` + `constant_set` for `locator_addon` flag and `google_map_id`)
+- Four migrations — two structural (`location_custom_field.user_uuid` + `constant_set` for the `locator_addon` flag and `google_map_id`) and two demo-data seeds (sample categories + sample locations)
 
 The add-on is gated behind the `locator_addon` constant — app-portal layouts read `context.constants.locator_addon == 'true'` to show/hide the nav link, footer link, and portal sidebar entry.
 
@@ -14,10 +14,16 @@ The add-on is gated behind the `locator_addon` constant — app-portal layouts r
 
 ## Setup — Migrations
 
-| Migration | Purpose |
-|---|---|
-| `20260507000007_location_custom_field.liquid` | `admin_table_update` to add `user_uuid` (belongs_to users) to the `modules/ins_locator/location_custom_field` table — this is what makes the user ↔ location join work |
-| `20260513070054_constants.liquid` | Sets `locator_addon = true` (feature flag the app-portal layouts read) and `google_map_id = ''` (Map ID used by the `googlemaps` partial) |
+Migrations run in timestamp order. The first two are structural (required); the last two seed demo data and are optional.
+
+| Migration | Type | Purpose |
+|---|---|---|
+| `20260507000007_location_custom_field.liquid` | Structural | `admin_table_update` to add `user_uuid` (belongs_to users) to the `modules/ins_locator/location_custom_field` table — this is what makes the user ↔ location join work |
+| `20260513070054_constants.liquid` | Structural | Sets `locator_addon = true` (feature flag the app-portal layouts read) and `google_map_id = ''` (Map ID used by the `googlemaps` partial) |
+| `20260525012058_locations.liquid` | Demo data | Seeds **21 sample partner locations** via the `import_models` mutation — `enabled`, geocoded (`geojson` Point), and each tagged with one of the two category UUIDs from the categories seed (12 Referral + 9 Implementation). Populates `/find-a-partner` for demos; safe to skip in a production tenant that has real locations. |
+| `20260525020101_categories.liquid` | Demo data | Seeds the **two partner categories** via `import_models` — **Implementation** (`3e226f25-a89a-47da-ace4-1234f634f1ab`) and **Referral** (`0ebe72b8-722f-4fd9-82cc-81a36791231e`) — that back the Partner Type dropdown and filter panel. These UUIDs match the `category_uuid` values on the seeded locations above. |
+
+> **Seed ordering note:** the locations seed (`…012058`) runs *before* the categories seed (`…020101`), so locations are imported referencing category UUIDs that don't yet exist as records. This works because `category_uuid` is stored as a plain string property (no insert-time foreign-key check) — the categories simply need to exist by the time `/find-a-partner` reads them.
 
 ---
 
@@ -379,8 +385,10 @@ modules/locator/public/
 │   ├── locations/
 │   └── system/
 ├── migrations/
-│   ├── 20260507000007_location_custom_field.liquid
-│   └── 20260513070054_constants.liquid
+│   ├── 20260507000007_location_custom_field.liquid  # structural: adds user_uuid to join table
+│   ├── 20260513070054_constants.liquid              # structural: locator_addon + google_map_id constants
+│   ├── 20260525012058_locations.liquid              # demo data: 21 sample partner locations
+│   └── 20260525020101_categories.liquid             # demo data: 2 categories (Implementation, Referral)
 └── views/
     ├── pages/
     │   ├── api/
