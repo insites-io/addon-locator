@@ -27,6 +27,54 @@ Migrations run in timestamp order. The first two are structural (required); the 
 
 ---
 
+## Setup — Google Map ID & Styling
+
+The Find a Partner map is rendered with the Google Maps **vector** renderer (required for the new marker API) and pulls its visual style from a Map ID configured in Google Cloud Console. The Map ID is stored in the `google_map_id` constant set by the `20260513070054_constants.liquid` migration — update that value once the Map ID below has been created.
+
+### Steps
+
+1. Sign in to [Google Cloud Console](https://console.cloud.google.com/) → select the Insites project.
+2. Open **Google Maps Platform → Map Styles** (left sidebar).
+3. Click **+ Create Map Style** → pick **Import JSON**.
+4. Paste the JSON below into the editor.
+5. Name the style **Insites Locator Map Style** → click **Save**.
+6. Open **Map Management** → click **+ Create Map ID**:
+   - **Map ID name:** Insites Locator Map
+   - **Map type:** JavaScript
+   - **Raster/Vector:** Vector (required for the new marker API)
+7. After it's created, click into the Map ID and associate the **Insites Locator Map Style** you just made with it.
+8. Copy the Map ID value (looks like `a1b2c3d4e5f67890`) and send it back.
+
+### Map style JSON (paste in step 4)
+
+```json
+[
+  { "elementType": "geometry", "stylers": [{ "color": "#f5f5f5" }] },
+  { "elementType": "labels.icon", "stylers": [{ "visibility": "off" }] },
+  { "elementType": "labels.text.fill", "stylers": [{ "color": "#616161" }] },
+  { "elementType": "labels.text.stroke", "stylers": [{ "color": "#f5f5f5" }] },
+  { "featureType": "poi", "stylers": [{ "visibility": "off" }] },
+  { "featureType": "transit", "stylers": [{ "visibility": "off" }] },
+  { "featureType": "road", "elementType": "geometry", "stylers": [{ "color": "#ffffff" }] },
+  { "featureType": "road.arterial", "elementType": "labels.text.fill", "stylers": [{ "color": "#757575" }] },
+  { "featureType": "road.highway", "elementType": "geometry", "stylers": [{ "color": "#dadada" }] },
+  { "featureType": "road.highway", "elementType": "labels.text.fill", "stylers": [{ "color": "#616161" }] },
+  { "featureType": "road.local", "elementType": "labels.text.fill", "stylers": [{ "color": "#9e9e9e" }] },
+  { "featureType": "water", "elementType": "geometry", "stylers": [{ "color": "#c9c9c9" }] },
+  { "featureType": "water", "elementType": "labels.text.fill", "stylers": [{ "color": "#9e9e9e" }] }
+]
+```
+
+### What to send back
+
+Just one line:
+
+```
+Map ID: <paste the ID here>
+```
+
+---
+
 ## Find a Partner Page
 
 `/find-a-partner` is a public directory that lets visitors search for nearby Insites partners using a location search, distance filter, category filter, and an interactive Google Map. The page uses `max_deep_level: 2` so it also serves the Partner Profile page at `/find-a-partner/{slug}` (see [Partner Profile Page](#partner-profile-page) below).
