@@ -99,6 +99,8 @@ async_callback_actions:
     {%- endcomment -%}
     {%- assign raw_name = form.properties.location_name | default: '' | strip -%}
     {%- if raw_name != '' -%}
+      {%- comment -%} A quoted backslash literal breaks the Liquid lexer (read as an escape), so capture it instead. {%- endcomment -%}
+      {%- capture backslash -%}\{%- endcapture -%}
       {%- assign base = raw_name
             | downcase
             | replace: '.', ''
@@ -130,7 +132,7 @@ async_callback_actions:
             | replace: '^', ''
             | replace: '`', ''
             | replace: '/', ''
-            | replace: '\', ''
+            | remove: backslash
             | strip
             | replace: '_', '-'
             | replace: ' ', '-'
