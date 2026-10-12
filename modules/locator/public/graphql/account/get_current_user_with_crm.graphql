@@ -8,7 +8,7 @@ query get_current_user_with_crm {
     external_id
 
     crm_contact: profiles(
-      profile_type: "modules/insites_core/crm_contact"
+      profile_type: "modules/insites_crm/crm_contact"
     ) {
       id
       company_uuid: property(name: "company_uuid")
@@ -16,7 +16,7 @@ query get_current_user_with_crm {
       mobile_phone_country_code: property(name: "mobile_phone_country_code")
 
       crm_company: related_record(
-        table: "modules/insites_core/crm_company"
+        table: "modules/insites_crm/crm_company"
         join_on_property: "company_uuid"
         foreign_property: "uuid"
       ) {
@@ -37,7 +37,7 @@ query get_current_user_with_crm {
         default_address_uuid: property(name: "default_address_uuid")
 
         crm_address: related_record(
-          table: "modules/insites_core/crm_address"
+          table: "modules/insites_crm/crm_address"
           join_on_property: "default_address_uuid"
           foreign_property: "uuid"
         ) {
